@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class WeaponAmmo : MonoBehaviour
 {
@@ -18,8 +19,17 @@ public class WeaponAmmo : MonoBehaviour
     [Header("Referencias")]
     public PlayerHealth playerHealth;
     private PlayerAmmoInventory playerInventory;
+    private PlayerInputActions inputActions;
 
     public bool IsReloading => isReloading;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+    }
+
+    private void OnEnable() => inputActions.Enable();
+    private void OnDisable() => inputActions.Disable();
 
     void Start()
     {
@@ -36,11 +46,11 @@ public class WeaponAmmo : MonoBehaviour
     {
         if (isReloading) return;
 
-        // Evaluar permiso (vivo, canReload activo y NO pausado)
         bool isAlive = (playerHealth == null || !playerHealth.isDead);
         bool allowedToReload = canReload && isAlive && !GameManager.IsPaused;
 
-        if (Input.GetKeyDown(KeyCode.R) && currentAmmo < magazineSize && allowedToReload)
+        // Lectura adaptada al New Input System
+        if (inputActions.Player.Reload.WasPressedThisFrame() && currentAmmo < magazineSize && allowedToReload)
         {
             TryReload();
         }
@@ -81,7 +91,6 @@ public class WeaponAmmo : MonoBehaviour
 
         yield return new WaitForSeconds(reloadTime);
 
-        // Si el jugador muere durante la recarga, cancelarla
         if (playerHealth != null && playerHealth.isDead)
         {
             isReloading = false;
@@ -93,7 +102,7 @@ public class WeaponAmmo : MonoBehaviour
 
         currentAmmo += ammoExtracted;
         isReloading = false;
-        
+
         Debug.Log($"Recarga completada. {ammoType}: {currentAmmo}/{magazineSize}");
     }
 }

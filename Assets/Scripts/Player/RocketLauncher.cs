@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class RocketLauncher : MonoBehaviour
 {
@@ -18,10 +19,24 @@ public class RocketLauncher : MonoBehaviour
 
     private float nextFireTime = 0f;
     private WeaponAmmo weaponAmmo;
+    private PlayerInputActions inputActions;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+    }
+
+    private void OnEnable() => inputActions.Enable();
+    private void OnDisable() => inputActions.Disable();
 
     void Start()
     {
         weaponAmmo = GetComponent<WeaponAmmo>();
+
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
 
         if (playerHealth == null)
         {
@@ -34,23 +49,28 @@ public class RocketLauncher : MonoBehaviour
         // Cancelar si no hay permiso, el jugador está muerto o el juego pausado
         if (!canShoot || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused) return;
 
-        if (Input.GetButton("Fire1") && Time.time >= nextFireTime)
+        // Lectura del New Input System para mantener presionado el clic
+        bool isTriggerPressed = inputActions.Player.Fire.IsPressed();
+
+        if (isTriggerPressed && Time.time >= nextFireTime)
         {
             if (weaponAmmo != null && !weaponAmmo.CanShoot())
             {
                 if (weaponAmmo.currentAmmo == 0) weaponAmmo.TryReload();
-                return; 
+                return;
             }
 
             nextFireTime = Time.time + fireRate;
             ShootRocket();
-            
+
             if (weaponAmmo != null) weaponAmmo.ConsumeBullet();
-        }        
+        }
     }
 
     void ShootRocket()
     {
+        if (mainCamera == null || firePoint == null) return;
+
         Ray cameraRay = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         Vector3 targetPoint;
 

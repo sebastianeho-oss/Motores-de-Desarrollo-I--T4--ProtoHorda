@@ -1,3 +1,4 @@
+using System; // <-- Necesario para el evento Action
 using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
@@ -7,12 +8,14 @@ public class EnemyHealth : MonoBehaviour
     public float currentHealth;
     public bool isDead = false;
 
+    // Evento que notifica al WaveSpawner cuándo este enemigo muere
+    public event Action OnEnemyDied;
+
     void Start()
     {
         currentHealth = maxHealth;
     }
 
-    // Método público para recibir daño desde las armas o proyectiles del jugador
     public void TakeDamage(float amount)
     {
         if (isDead) return;
@@ -33,8 +36,9 @@ public class EnemyHealth : MonoBehaviour
         isDead = true;
         Debug.Log($"{gameObject.name} ha muerto.");
 
-        // Opcional: Aquí puedes instanciar partículas de muerte o soltar munición/botiquines
+        // Notificar al WaveSpawner que este enemigo murió
+        OnEnemyDied?.Invoke();
 
-        Destroy(gameObject); // Destruye el objeto del enemigo de la escena
+        Destroy(gameObject);
     }
 }

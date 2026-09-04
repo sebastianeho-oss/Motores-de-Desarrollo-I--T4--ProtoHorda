@@ -1,27 +1,37 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
-    // Propiedad estática pública para consultar la pausa desde cualquier script
     public static bool IsPaused { get; private set; } = false;
 
     [Header("UI Panels")]
     public GameObject HUD;
     public GameObject gameOverUI;
     public GameObject winUI;
-    public GameObject pauseUI; // Panel de Pausa
+    public GameObject pauseUI;
 
     [Header("Referencias del Jugador")]
     public GameObject player;
 
+    private PlayerInputActions inputActions;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+        inputActions.Player.Pause.performed += _ => OnPauseInput();
+    }
+
+    private void OnEnable() => inputActions.Enable();
+    private void OnDisable() => inputActions.Disable();
+
     void Start()
     {
         IsPaused = false;
-        Time.timeScale = 1f; 
+        Time.timeScale = 1f;
         LockCursor();
 
-        // Ocultar pantallas al comenzar
         if (gameOverUI != null) gameOverUI.SetActive(false);
         if (winUI != null) winUI.SetActive(false);
         if (pauseUI != null) pauseUI.SetActive(false);
@@ -29,18 +39,10 @@ public class GameManager : MonoBehaviour
     }
 
     void Update()
-    {        
-        // Comprobar si alguna pantalla final está activa
-        bool isEndGameUIActive = (winUI != null && winUI.activeInHierarchy) || 
+    {
+        bool isEndGameUIActive = (winUI != null && winUI.activeInHierarchy) ||
                                 (gameOverUI != null && gameOverUI.activeInHierarchy);
 
-        // Abrir/Cerrar pausa con Esc solo si la partida no ha terminado
-        if (Input.GetKeyDown(KeyCode.Escape) && !isEndGameUIActive)
-        {
-            TogglePause();
-        }
-
-        // Manejo del cursor si hay cualquier UI activa
         bool isAnyUIActive = isEndGameUIActive || IsPaused;
 
         if (isAnyUIActive)
@@ -50,6 +52,17 @@ public class GameManager : MonoBehaviour
         else
         {
             LockCursor();
+        }
+    }
+
+    private void OnPauseInput()
+    {
+        bool isEndGameUIActive = (winUI != null && winUI.activeInHierarchy) ||
+                                (gameOverUI != null && gameOverUI.activeInHierarchy);
+
+        if (!isEndGameUIActive)
+        {
+            TogglePause();
         }
     }
 
@@ -99,7 +112,7 @@ public class GameManager : MonoBehaviour
     {
         if (gameOverUI != null) gameOverUI.SetActive(true);
         if (HUD != null) HUD.SetActive(false);
-        Time.timeScale = 0f; 
+        Time.timeScale = 0f;
     }
 
     public void Win()

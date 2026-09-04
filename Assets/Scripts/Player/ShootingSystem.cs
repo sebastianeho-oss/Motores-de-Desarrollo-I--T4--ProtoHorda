@@ -1,9 +1,9 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ShootingSystem : MonoBehaviour
 {
-    // Enum para seleccionar el modo de disparo en el Inspector
     public enum FireMode { SemiAutomatic, FullAutomatic, Burst }
 
     [Header("Permisos Locales")]
@@ -20,24 +20,30 @@ public class ShootingSystem : MonoBehaviour
     public FireMode fireMode = FireMode.FullAutomatic;
 
     [Header("Ajustes de Ráfaga (Solo si FireMode = Burst)")]
-    [Tooltip("Cantidad de balas a disparar por cada ráfaga (ej: 2 o 3).")]
     public int burstCount = 3;
-    [Tooltip("Tiempo de espera entre cada bala dentro de la ráfaga.")]
     public float burstDelay = 0.08f;
 
     [Header("Ajustes de Disparo General")]
     public float damage = 25f;
     public float maxShootDistance = 100f;
-    [Tooltip("Tiempo de espera entre disparos/ráfagas.")]
     public float fireRate = 0.15f;
     public float tracerDuration = 0.04f;
     public LayerMask shootableMask;
 
     private float nextFireTime = 0f;
-    private bool isShootingBurst = false; // Bloquea nuevos disparos durante una ráfaga
+    private bool isShootingBurst = false;
 
     public WeaponRecoil weaponRecoil;
     private WeaponAmmo weaponAmmo;
+    private PlayerInputActions inputActions;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+    }
+
+    private void OnEnable() => inputActions.Enable();
+    private void OnDisable() => inputActions.Disable();
 
     void Start()
     {
@@ -45,7 +51,12 @@ public class ShootingSystem : MonoBehaviour
         {
             lineRenderer.enabled = false;
         }
-       
+
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+
         weaponAmmo = GetComponent<WeaponAmmo>();
 
         if (playerHealth == null)
@@ -56,24 +67,21 @@ public class ShootingSystem : MonoBehaviour
 
     void Update()
     {
-        // Cancelar si no hay permiso, si está realizando una ráfaga, si murió o si está en pausa
         if (!canShoot || isShootingBurst || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused) return;
 
-        // Determinar si se detecta mantenido o un solo clic según el modo activo
-        bool isTriggerPressed = (fireMode == FireMode.FullAutomatic) 
-            ? Input.GetButton("Fire1")       // Mantiene presionado
-            : Input.GetButtonDown("Fire1");   // Clic único (Semi y Burst)
+        // Detectar según el modo usando las APIs del New Input System
+        bool isTriggerPressed = (fireMode == FireMode.FullAutomatic)
+            ? inputActions.Player.Fire.IsPressed()
+            : inputActions.Player.Fire.WasPressedThisFrame();
 
         if (isTriggerPressed && Time.time >= nextFireTime)
         {
-            // Validar munición antes de intentar disparar
             if (weaponAmmo != null && !weaponAmmo.CanShoot())
             {
                 if (weaponAmmo.currentAmmo == 0) weaponAmmo.TryReload();
-                return; 
+                return;
             }
 
-            // Ejecutar según el modo seleccionado
             if (fireMode == FireMode.Burst)
             {
                 StartCoroutine(FireBurstRoutine());
@@ -85,7 +93,6 @@ public class ShootingSystem : MonoBehaviour
         }
     }
 
-    // Realiza un solo disparo y calcula la cadencia normal
     private void ExecuteSingleShot()
     {
         nextFireTime = Time.time + fireRate;
@@ -94,14 +101,12 @@ public class ShootingSystem : MonoBehaviour
         if (weaponAmmo != null) weaponAmmo.ConsumeBullet();
     }
 
-    // Corrutina encargada de procesar las ráfagas
     private IEnumerator FireBurstRoutine()
     {
         isShootingBurst = true;
 
         for (int i = 0; i < burstCount; i++)
         {
-            // Romper ráfaga si se queda sin balas
             if (weaponAmmo != null && !weaponAmmo.CanShoot())
             {
                 if (weaponAmmo.currentAmmo == 0) weaponAmmo.TryReload();
@@ -112,20 +117,20 @@ public class ShootingSystem : MonoBehaviour
 
             if (weaponAmmo != null) weaponAmmo.ConsumeBullet();
 
-            // Espera entre balas dentro de la ráfaga
             if (i < burstCount - 1)
             {
                 yield return new WaitForSeconds(burstDelay);
             }
         }
 
-        // Establece el cooldown general tras completar la ráfaga
         nextFireTime = Time.time + fireRate;
         isShootingBurst = false;
     }
 
     void Shoot()
     {
+        if (mainCamera == null || firePoint == null) return;
+
         Ray cameraRay = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         Vector3 targetPoint;
         bool hasCameraHit = Physics.Raycast(cameraRay, out RaycastHit cameraHit, maxShootDistance, shootableMask);
@@ -178,7 +183,7 @@ public class ShootingSystem : MonoBehaviour
 
         if (weaponRecoil != null)
         {
-           weaponRecoil.TriggerRecoil();
+            weaponRecoil.TriggerRecoil();
         }
     }
 

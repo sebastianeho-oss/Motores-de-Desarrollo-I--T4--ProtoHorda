@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class WeaponSwitcher : MonoBehaviour
 {
@@ -11,6 +12,22 @@ public class WeaponSwitcher : MonoBehaviour
     [Header("Arma Seleccionada")]
     public int selectedWeapon = 0;
 
+    private PlayerInputActions inputActions;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+
+        inputActions.Player.SelectWeapon.performed += ctx => OnScroll(ctx.ReadValue<float>());
+
+        inputActions.Player.Weapon1.performed += _ => SelectWeaponIndex(0);
+        inputActions.Player.Weapon2.performed += _ => SelectWeaponIndex(1);
+        inputActions.Player.Weapon3.performed += _ => SelectWeaponIndex(2);
+    }
+
+    private void OnEnable() => inputActions.Enable();
+    private void OnDisable() => inputActions.Disable();
+
     void Start()
     {
         if (playerHealth == null)
@@ -21,66 +38,49 @@ public class WeaponSwitcher : MonoBehaviour
         SelectWeapon();
     }
 
-    void Update()
+    private void OnScroll(float scrollValue)
     {
-        // Cancelar en caso de bloqueo local, muerte o pausa
-        if (!canSwitchWeapon || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused) return;
+        if (!CanSwitch()) return;
 
-        int previousSelectedWeapon = selectedWeapon;
+        int previousSelected = selectedWeapon;
 
-        // 1. Cambio con la rueda del ratón
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-
-        if (scroll > 0f)
+        if (scrollValue > 0f)
         {
-            if (selectedWeapon >= transform.childCount - 1)
-                selectedWeapon = 0;
-            else
-                selectedWeapon++;
+            selectedWeapon = (selectedWeapon >= transform.childCount - 1) ? 0 : selectedWeapon + 1;
         }
-        else if (scroll < 0f)
+        else if (scrollValue < 0f)
         {
-            if (selectedWeapon <= 0)
-                selectedWeapon = transform.childCount - 1;
-            else
-                selectedWeapon--;
+            selectedWeapon = (selectedWeapon <= 0) ? transform.childCount - 1 : selectedWeapon - 1;
         }
 
-        // 2. Cambio con teclas numéricas
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            selectedWeapon = 0;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha2) && transform.childCount >= 2)
-        {
-            selectedWeapon = 1;
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha3) && transform.childCount >= 3)
-        {
-            selectedWeapon = 2;
-        }
-
-        // 3. Actualizar
-        if (previousSelectedWeapon != selectedWeapon)
+        if (previousSelected != selectedWeapon)
         {
             SelectWeapon();
         }
     }
 
+    private void SelectWeaponIndex(int index)
+    {
+        if (!CanSwitch()) return;
+
+        if (index < transform.childCount && selectedWeapon != index)
+        {
+            selectedWeapon = index;
+            SelectWeapon();
+        }
+    }
+
+    private bool CanSwitch()
+    {
+        return canSwitchWeapon && (playerHealth == null || !playerHealth.isDead) && !GameManager.IsPaused;
+    }
+
     void SelectWeapon()
     {
         int i = 0;
-
         foreach (Transform weapon in transform)
         {
-            if (i == selectedWeapon)
-            {
-                weapon.gameObject.SetActive(true);
-            }
-            else
-            {
-                weapon.gameObject.SetActive(false);
-            }
+            weapon.gameObject.SetActive(i == selectedWeapon);
             i++;
         }
     }
