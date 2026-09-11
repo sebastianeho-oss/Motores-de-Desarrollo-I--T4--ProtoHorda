@@ -48,8 +48,7 @@ public class RocketLauncher : MonoBehaviour
     {
         // Cancelar si no hay permiso, el jugador está muerto o el juego pausado
         if (!canShoot || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused) return;
-
-        // Lectura del New Input System para mantener presionado el clic
+             
         bool isTriggerPressed = inputActions.Player.Fire.IsPressed();
 
         if (isTriggerPressed && Time.time >= nextFireTime)

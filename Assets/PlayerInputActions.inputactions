@@ -127,6 +127,36 @@
                     "priority": 0
                 },
                 {
+                    "name": "Weapon 4",
+                    "type": "Button",
+                    "id": "f6be81d6-f4a7-460b-a600-de6811d13095",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "Weapon 5",
+                    "type": "Button",
+                    "id": "60bd8e85-f478-4597-98cf-51b8d51d6de7",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "Weapon 6",
+                    "type": "Button",
+                    "id": "6fc1ea2b-a5f6-4327-8901-0a9df35a5ebc",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
                     "name": "Pause",
                     "type": "Button",
                     "id": "d3203e9e-20fa-477a-9eda-970ec8719c3e",
@@ -399,6 +429,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Weapon 3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "abd23851-f6a6-4421-93b5-9b16e2b4967c",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Weapon 4",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "539b7cea-a2ff-4fc6-8e77-77375bd28d9f",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Weapon 5",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ea0eb1f1-5e6b-4ccb-98f8-e76286b74f15",
+                    "path": "<Keyboard>/6",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Weapon 6",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

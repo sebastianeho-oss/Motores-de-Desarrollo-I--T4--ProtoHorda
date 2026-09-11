@@ -20,7 +20,7 @@ public class CinemachineStateController : MonoBehaviour
 
     [Header("Rotación y Sensibilidad")]
     public Transform playerTarget;
-    public float mouseSensitivity = 2.0f; // Ajustado para deltaTime
+    public float mouseSensitivity = 2.0f;
     public float aimSensitivityMultiplier = 0.5f;
     public float minYAngle = -35.0f;
     public float maxYAngle = 60.0f;
@@ -102,8 +102,7 @@ public class CinemachineStateController : MonoBehaviour
         UpdateCameraPriorities();
 
         float currentSensitivity = IsAiming ? (mouseSensitivity * aimSensitivityMultiplier) : mouseSensitivity;
-
-        // Ajuste con Time.deltaTime para estabilizar la entrada de delta del ratón
+               
         currentX += lookInput.x * currentSensitivity * Time.deltaTime * 60f;
         currentY -= lookInput.y * currentSensitivity * Time.deltaTime * 60f;
         currentY = Mathf.Clamp(currentY, minYAngle, maxYAngle);

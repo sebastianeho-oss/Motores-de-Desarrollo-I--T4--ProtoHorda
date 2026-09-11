@@ -5,14 +5,14 @@ using UnityEngine;
 public class Rocket : MonoBehaviour
 {
     [Header("Movimiento")]
-    public float speed = 35f;            // Velocidad del cohete
-    public float maxLifetime = 6f;       // Tiempo de vida máximo si no choca contra nada
+    public float speed = 35f;
+    public float maxLifetime = 6f;
 
     [Header("Efectos y Área de Explosión")]
-    public GameObject explosionPrefab;   // Prefab de partículas de explosión
-    public float explosionRadius = 6f;   // Radio de la onda expansiva
-    public float explosionForce = 800f;  // Fuerza para empujar objetos/físicas
-    public float damage = 100f;          // Daño base de la explosión
+    public GameObject explosionPrefab;
+    public float explosionRadius = 6f;
+    public float explosionForce = 800f;
+    public float damage = 100f;
 
     private Rigidbody rb;
 
@@ -35,13 +35,13 @@ public class Rocket : MonoBehaviour
 
     void Explode()
     {
-        // 1. Instanciar partículas de explosión
+        // Instanciar partículas de explosión
         if (explosionPrefab != null)
         {
             Instantiate(explosionPrefab, transform.position, Quaternion.identity);
         }
 
-        // 2. Detectar todos los objetos dentro del radio de explosión
+        // Detectar todos los objetos dentro del radio de explosión
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
 
         // Registro para evitar aplicar daño duplicado al mismo enemigo si tiene varios colliders
@@ -69,8 +69,7 @@ public class Rocket : MonoBehaviour
                 damagedEnemies.Add(health);
             }
         }
-
-        // 3. Destruir el objeto del cohete
+                
         Destroy(gameObject);
     }
 

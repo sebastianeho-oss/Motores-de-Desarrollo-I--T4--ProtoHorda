@@ -29,13 +29,13 @@ public class HealthUI : MonoBehaviour
     {
         if (playerHealth == null) return;
 
-        // 1. Transición suave del valor de la barra de vida
+        // Transición suave del valor de la barra de vida
         if (healthSlider != null)
         {
             healthSlider.value = Mathf.Lerp(healthSlider.value, playerHealth.currentHealth, Time.deltaTime * fillSpeed);
         }
 
-        // 2. Actualizar texto en pantalla (Ejemplo: "100 / 100")
+        // Actualizar cifra en pantalla
         if (healthText != null)
         {
             int currentHP = Mathf.CeilToInt(playerHealth.currentHealth);

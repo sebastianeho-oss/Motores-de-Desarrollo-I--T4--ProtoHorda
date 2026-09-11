@@ -39,14 +39,14 @@ public class WeaponRecoil : MonoBehaviour
         float currentRecoilX = recoilX;
         float currentRecoilY = recoilY;
 
-        // 1. Reducción por Apuntar
+        // Reducción del retroceso por apuntar
         if (cameraController != null && cameraController.IsAiming)
         {
             currentRecoilX *= aimRecoilMultiplier;
             currentRecoilY *= aimRecoilMultiplier;
         }
 
-        // 2. Evaluación de Estado Agachado (Quieto vs. En Movimiento)
+        // Evaluación de estado agachado
         if (movementController != null && movementController.IsCrouching)
         {
             float crouchMultiplier = movementController.IsMoving

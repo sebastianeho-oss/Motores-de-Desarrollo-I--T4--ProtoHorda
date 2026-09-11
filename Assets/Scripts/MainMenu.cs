@@ -6,8 +6,7 @@ using UnityEngine.SceneManagement;
 public class MainMenu : MonoBehaviour
 {
     void Start()
-    {
-        // Forzar que el cursor esté visible y desbloqueado en el Menú Principal
+    {        
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }

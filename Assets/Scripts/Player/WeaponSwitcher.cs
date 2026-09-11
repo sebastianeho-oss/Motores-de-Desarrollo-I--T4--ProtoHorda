@@ -23,6 +23,12 @@ public class WeaponSwitcher : MonoBehaviour
         inputActions.Player.Weapon1.performed += _ => SelectWeaponIndex(0);
         inputActions.Player.Weapon2.performed += _ => SelectWeaponIndex(1);
         inputActions.Player.Weapon3.performed += _ => SelectWeaponIndex(2);
+        inputActions.Player.Weapon4.performed += _ => SelectWeaponIndex(3);
+        inputActions.Player.Weapon5.performed += _ => SelectWeaponIndex(4);
+        inputActions.Player.Weapon6.performed += _ => SelectWeaponIndex(5);
+
+
+
     }
 
     private void OnEnable() => inputActions.Enable();

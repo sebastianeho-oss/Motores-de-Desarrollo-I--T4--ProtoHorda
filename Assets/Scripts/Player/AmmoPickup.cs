@@ -3,13 +3,13 @@ using UnityEngine;
 public class AmmoPickup : MonoBehaviour
 {
     [Header("Configuración de Munición")]
-    public AmmoType ammoType;    // Seleccionas en el Inspector si es Rifle, Rocket, etc.
-    public int ammoAmount = 30;  // Cantidad de balas/cohetes que otorga al recogerlo
+    public AmmoType ammoType;
+    public int ammoAmount = 30;
 
     [Header("Efecto Visual (Opcional)")]
-    public float rotationSpeed = 50f; // Velocidad a la que gira el cubo en el suelo
-    public float floatSpeed = 2f;     // Velocidad de flotación
-    public float floatAmount = 0.25f; // Altura del suave movimiento arriba y abajo
+    public float rotationSpeed = 50f;
+    public float floatSpeed = 2f;
+    public float floatAmount = 0.25f;
 
     private Vector3 startPos;
 
@@ -20,7 +20,6 @@ public class AmmoPickup : MonoBehaviour
 
     void Update()
     {
-        // 1. Animación simple de giro y flotación para que parezca un pickup de videojuego
         transform.Rotate(Vector3.up * rotationSpeed * Time.deltaTime);
 
         float newY = startPos.y + Mathf.Sin(Time.time * floatSpeed) * floatAmount;
@@ -43,11 +42,8 @@ public class AmmoPickup : MonoBehaviour
 
         if (amountAdded > 0)
             {
-            Debug.Log($"¡Recogiste {amountAdded} unidades de munición para {ammoType}!");
-            
-            // Opcional: Reproducir sonido de recoger aquí
-            
-            Destroy(gameObject); // Solo se destruye si el jugador pudo aprovechar munición
+            Debug.Log($"¡Recogiste {amountAdded} unidades de munición para {ammoType}!");         
+            Destroy(gameObject);
             }
         else
             {

@@ -68,8 +68,7 @@ public class ShootingSystem : MonoBehaviour
     void Update()
     {
         if (!canShoot || isShootingBurst || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused) return;
-
-        // Detectar según el modo usando las APIs del New Input System
+                
         bool isTriggerPressed = (fireMode == FireMode.FullAutomatic)
             ? inputActions.Player.Fire.IsPressed()
             : inputActions.Player.Fire.WasPressedThisFrame();

@@ -48,8 +48,7 @@ public class WeaponAmmo : MonoBehaviour
 
         bool isAlive = (playerHealth == null || !playerHealth.isDead);
         bool allowedToReload = canReload && isAlive && !GameManager.IsPaused;
-
-        // Lectura adaptada al New Input System
+                
         if (inputActions.Player.Reload.WasPressedThisFrame() && currentAmmo < magazineSize && allowedToReload)
         {
             TryReload();

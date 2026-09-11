@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -12,6 +12,6 @@ public struct EnemyGroup
 public class WaveData : ScriptableObject
 {
     public List<EnemyGroup> enemyGroups;
-    public float spawnInterval = 1.0f;   // Tiempo entre la aparici�n de cada enemigo
-    public float timeBeforeWave = 3.0f;  // Tiempo de pausa/descanso antes de iniciar la ola
+    public float spawnInterval = 1.0f;   // Tiempo entre la aparición de cada enemigo
+    public float timeBeforeWave = 3.0f;  // Tiempo antes de iniciar la siguiente ronda
 }

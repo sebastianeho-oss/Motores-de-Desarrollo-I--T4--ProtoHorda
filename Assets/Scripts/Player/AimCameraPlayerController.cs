@@ -56,7 +56,7 @@ public class AimCameraPlayerController : MonoBehaviour
     [Header("Referencia Dinámica del Arma")]
     [Tooltip("Arrastra aquí tu GameObject WeaponHolder. El script detectará el arma visible activada.")]
     public Transform weaponHolder; 
-    public PlayerHealth playerHealth; // Referencia a la salud del jugador
+    public PlayerHealth playerHealth;
 
     [Header("Suavizado de Transición")]
     public float transitionSpeed = 8.0f;
@@ -123,7 +123,7 @@ public class AimCameraPlayerController : MonoBehaviour
             return;
         }
 
-        // 1. Detección de Inputs y Estados
+        // Detección de Inputs y Estados
         bool isMoving = Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0;
         bool isSprinting = Input.GetKey(KeyCode.LeftShift) && isMoving;
         
@@ -131,7 +131,7 @@ public class AimCameraPlayerController : MonoBehaviour
         bool aimingInput = canAim && Input.GetButton("Fire2") && !isSprinting;
         SetAimingState(aimingInput);
 
-        // 2. Determinar valores objetivo según el estado activo
+        // Determinar valores objetivo según el estado activo
         Vector3 targetOffset = normalOffset;
         float targetFOV = normalFOV;
         float currentSensitivity = mouseSensitivity;
@@ -162,32 +162,31 @@ public class AimCameraPlayerController : MonoBehaviour
             targetFOV = sprintFOV;
         }
 
-        // 3. Transiciones suaves de cámara
+        // Transiciones suaves de cámara
         currentOffset = Vector3.Lerp(currentOffset, targetOffset, Time.deltaTime * transitionSpeed);
         currentHeightOffset = Mathf.Lerp(currentHeightOffset, desiredHeight, Time.deltaTime * transitionSpeed);
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.deltaTime * transitionSpeed);
 
-        // 4. Rotación mediante el ratón
+        // Rotación mediante el ratón
         currentX += Input.GetAxis("Mouse X") * currentSensitivity;
         currentY -= Input.GetAxis("Mouse Y") * currentSensitivity;
         currentY = Mathf.Clamp(currentY, minYAngle, maxYAngle);
 
         Quaternion rotation = Quaternion.Euler(currentY, currentX, 0);
 
-        // 5. Posicionamiento final de la cámara
+        // Posición final de la cámara
         Vector3 targetPosition = target.position + Vector3.up * currentHeightOffset;
         Vector3 finalPosition = targetPosition + rotation * currentOffset;
 
         transform.position = finalPosition;
         transform.rotation = rotation;
 
-        // 6. Inclinación física del torso (después de posicionar la cámara y evaluar las animaciones)
+        // Inclinación física del torso (después de posicionar la cámara y evaluar las animaciones)
         RotateSpineWithCamera();
     }
 
-    /// <summary>
-    /// Actualiza la propiedad IsAiming y sincroniza el Animator Controller
-    /// </summary>
+    
+    /// Actualiza la propiedad IsAiming y sincroniza el Animator Controller    
     private void SetAimingState(bool state)
     {
         IsAiming = state;
@@ -197,10 +196,8 @@ public class AimCameraPlayerController : MonoBehaviour
             characterAnimator.SetBool(aimingBoolParameter, IsAiming);
         }
     }
-
-    /// <summary>
-    /// Aplica la inclinación vertical a la columna vertebral en tiempo real
-    /// </summary>
+        
+    /// Aplica la inclinación vertical a la columna vertebral en tiempo real    
     private void RotateSpineWithCamera()
     {
         if (spineBone == null) return;

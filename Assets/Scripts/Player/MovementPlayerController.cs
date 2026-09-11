@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class MovementPlayerController : MonoBehaviour
@@ -33,9 +33,12 @@ public class MovementPlayerController : MonoBehaviour
     private Vector3 velocity;
     private bool isGrounded;
 
+    // Variable para almacenar la velocidad horizontal que trae al saltar (Inercia)
+    private float horizontalAirSpeed;
+
     public bool IsCrouching { get; private set; }
 
-    // Propiedad que eval�a si el personaje se desplaza activamente y tiene permiso para hacerlo
+    // Propiedad que evalua si el personaje se desplaza activamente y si tiene permiso para hacerlo
     public bool IsMoving
     {
         get
@@ -131,13 +134,30 @@ public class MovementPlayerController : MonoBehaviour
                     IsCrouching = false;
                 }
 
-                bool wantsToSprint = sprintHeld && !isAiming && !IsCrouching;
-
+                // Definimos la velocidad según si está en el suelo o en el aire
                 float currentSpeed = walkSpeed;
-                if (wantsToSprint) currentSpeed = sprintSpeed;
-                else if (IsCrouching) currentSpeed = crouchSpeed;
 
-                if (isAiming) currentSpeed *= aimSpeedMultiplier;
+                if (isGrounded)
+                {
+                    // En el suelo aplicamos la lógica normal con sprint permitido
+                    bool wantsToSprint = sprintHeld && !isAiming && !IsCrouching;
+
+                    if (wantsToSprint) currentSpeed = sprintSpeed;
+                    else if (IsCrouching) currentSpeed = crouchSpeed;
+
+                    if (isAiming) currentSpeed *= aimSpeedMultiplier;
+
+                    // Guardamos esta velocidad por si decide saltar en este preciso instante
+                    horizontalAirSpeed = currentSpeed;
+                }
+                else
+                {
+                    // En el aire, mantenemos la inercia con la que despegó (horizontalAirSpeed), 
+                    // pero limitamos el control aéreo para que no pueda acelerar a sprint si venía caminando.
+                    // Si caminaba (<= walkSpeed), se queda en walkSpeed; si venía corriendo, mantiene esa inercia.
+                    currentSpeed = Mathf.Max(horizontalAirSpeed, walkSpeed);
+                    if (isAiming) currentSpeed *= aimSpeedMultiplier;
+                }
 
                 Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
                 if (move.magnitude > 1f) move.Normalize();
@@ -171,6 +191,16 @@ public class MovementPlayerController : MonoBehaviour
         bool isAlive = (playerHealth == null || !playerHealth.isDead);
         if (canJump && isAlive && !GameManager.IsPaused && isGrounded)
         {
+            // Antes de saltar, evaluamos qué velocidad exacta tenía para conservarla como inercia en el aire
+            bool isAiming = (cameraController != null && cameraController.IsAiming);
+            bool wantsToSprint = sprintHeld && !isAiming && !IsCrouching;
+
+            if (wantsToSprint) horizontalAirSpeed = sprintSpeed;
+            else if (IsCrouching) horizontalAirSpeed = crouchSpeed;
+            else horizontalAirSpeed = walkSpeed;
+
+            if (isAiming) horizontalAirSpeed *= aimSpeedMultiplier;
+
             IsCrouching = false;
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
