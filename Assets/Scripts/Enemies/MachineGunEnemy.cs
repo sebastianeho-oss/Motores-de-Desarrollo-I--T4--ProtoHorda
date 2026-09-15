@@ -12,6 +12,9 @@ public class MachineGunEnemy : MonoBehaviour
     public float bulletSpread = 0.05f;     // Dispersión/Imprecisión de las balas
     public float tracerDuration = 0.04f;   // Cuánto tiempo dura visible la línea del disparo
 
+    [Header("Capas de Colisión")]
+    public LayerMask collisionLayers;      // Selecciona aquí Ground y Environment en el Inspector
+
     [Header("Referencias Visuales y Componentes")]
     public Transform firePoint;            // Punto de origen del disparo (cañón)
     public LineRenderer lineRenderer;      // Componente para dibujar la trazadora
@@ -79,7 +82,7 @@ public class MachineGunEnemy : MonoBehaviour
     {
         if (firePoint == null) return;
 
-        // 1. Calcular dirección hacia el centro del jugador + Dispersión
+        //Calcula dirección hacia el centro del jugador + Dispersión
         Vector3 targetCenter = playerTransform.position + Vector3.up * 1f; // Apuntar al pecho
         Vector3 baseDirection = (targetCenter - firePoint.position).normalized;
 
@@ -92,8 +95,8 @@ public class MachineGunEnemy : MonoBehaviour
 
         Vector3 endPoint;
 
-        // 2. Realizar el Raycast (Línea invisible que detecta impacto)
-        if (Physics.Raycast(firePoint.position, spreadDirection, out RaycastHit hit, shootingRange))
+        // Realizar el Raycast incluyendo la LayerMask (Ground y Environment)        
+        if (Physics.Raycast(firePoint.position, spreadDirection, out RaycastHit hit, shootingRange, collisionLayers))
         {
             endPoint = hit.point;
 
@@ -121,7 +124,7 @@ public class MachineGunEnemy : MonoBehaviour
             endPoint = firePoint.position + spreadDirection * shootingRange;
         }
 
-        // 3. Efectos visuales de disparo
+        // Efectos visuales de disparo
         if (muzzleFlash != null)
         {
             muzzleFlash.Play();

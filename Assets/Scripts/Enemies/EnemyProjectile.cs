@@ -13,7 +13,7 @@ public class EnemyProjectile : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        
+
         // Asignar velocidad constante
         rb.linearVelocity = transform.forward * speed;
 
@@ -23,15 +23,15 @@ public class EnemyProjectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // 1. Ignorar si la bala toca a otro enemigo o a otra bala
-        if (other.CompareTag("Enemy") || other.gameObject.layer == LayerMask.NameToLayer("Enemy")) 
+        // Ignora si la bala toca a otro enemigo o a otra bala
+        if (other.CompareTag("Enemy") || other.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
             return;
         }
 
-        // 2. Buscar PlayerHealth en el objeto impactado, en sus padres o en sus hijos
+        // Busca PlayerHealth en el objeto impactado
         PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
-        
+
         if (playerHealth == null)
         {
             playerHealth = other.GetComponentInParent<PlayerHealth>();
@@ -42,18 +42,18 @@ public class EnemyProjectile : MonoBehaviour
             playerHealth = other.GetComponentInChildren<PlayerHealth>();
         }
 
-        // 3. Si se encontró el PlayerHealth, aplicar daño
+        // Si se encontró el PlayerHealth, aplicar daño
         if (playerHealth != null)
         {
             playerHealth.TakeDamage(damage);
             Debug.Log($"¡Proyectil enemigo dañó al jugador! -{damage} HP");
-            
+
             Destroy(gameObject); // Destruir la bala tras dañar
             return;
         }
 
-        // 4. Si choca contra el suelo, paredes u obstáculos del mapa
-        if (!other.isTrigger) 
+        // Si choca contra el suelo, paredes u obstáculos del mapa (Ground, Environment, etc.)
+        if (!other.isTrigger)
         {
             Destroy(gameObject);
         }
