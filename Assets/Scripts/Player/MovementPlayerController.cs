@@ -28,6 +28,10 @@ public class MovementPlayerController : MonoBehaviour
     public LayerMask groundMask;
     public PlayerHealth playerHealth;
 
+    //Audio del personaje
+    public PlayerSoundController playerSoundController;
+    
+
     private CharacterController controller;
     private Animator animator;
     private Vector3 velocity;
@@ -55,6 +59,10 @@ public class MovementPlayerController : MonoBehaviour
     private PlayerInputActions inputActions;
     private Vector2 moveInput;
     private bool sprintHeld;
+    private float stepTimer = 0;
+    public float walkStepInterval = 0.5f;
+    public float sprintStepInterval = 0.3f;
+    public float crouchStepInterval = 0.7f;
 
     private void Awake()
     {
@@ -169,6 +177,32 @@ public class MovementPlayerController : MonoBehaviour
             controller.Move(velocity * Time.deltaTime);
         }
 
+        if(IsMoving && isGrounded)
+        {
+            stepTimer -= Time.deltaTime;
+
+            if(stepTimer <= 0f)
+            {
+                playerSoundController.playMove();
+                if(IsCrouching)
+                {
+                    stepTimer = crouchStepInterval;
+                }
+                else if (sprintHeld)
+                {
+                    stepTimer = sprintStepInterval;
+                }
+                else
+                {
+                    stepTimer = walkStepInterval;
+                }
+            }
+        }
+        else
+        {
+            stepTimer = 0f;
+        }
+        
         if (animator != null)
         {
             animator.SetFloat("MoveX", moveInput.x);
@@ -202,6 +236,7 @@ public class MovementPlayerController : MonoBehaviour
             if (isAiming) horizontalAirSpeed *= aimSpeedMultiplier;
 
             IsCrouching = false;
+            playerSoundController.playJump();
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
     }
