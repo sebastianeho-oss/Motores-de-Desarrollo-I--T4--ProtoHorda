@@ -13,11 +13,19 @@ public class MainMenu : MonoBehaviour
 
     public void PlayGame()
     {
-        SceneManager.LoadSceneAsync(1);
+        StartCoroutine(PlayGameDelay());
     }
 
-    public void QuitGame()
+    private IEnumerator PlayGameDelay()
     {
+        yield return new WaitForSecondsRealtime(0.2f);
+
+        SceneManager.LoadSceneAsync(1);
+    }
+    private IEnumerator QuitGameDelay()
+    {
+        yield return new WaitForSecondsRealtime(0.2f);
+
         Application.Quit();
     }
 }
