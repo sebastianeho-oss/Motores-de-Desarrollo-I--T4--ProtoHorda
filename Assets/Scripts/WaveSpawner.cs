@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class WaveSpawner : MonoBehaviour
 {
+    [SerializeField] private ShopManager shopManager; 
+    [SerializeField] private int coinsPerWave = 100;//monedas tienda
     [Header("Configuración de Olas y Spawns")]
     [SerializeField] private List<WaveData> waves;
     [SerializeField] private Transform[] spawnPoints;
@@ -52,6 +54,10 @@ public class WaveSpawner : MonoBehaviour
         {
             activeWaveTimer += Time.deltaTime;
         }
+    }
+    public void StartNextWaveFromShop()
+    {
+        StartCoroutine(StartNextWave());
     }
 
     private IEnumerator StartNextWave()
@@ -137,10 +143,23 @@ public class WaveSpawner : MonoBehaviour
 
         if (activeEnemiesCount <= 0 && !isSpawning)
         {
-            isWaveActive = false; // Detenemos el cronómetro de la horda al completarla
+            isWaveActive = false;
+
             Debug.Log($"¡Ola {currentWaveIndex + 1} completada en {activeWaveTimer:F2} segundos!");
+
+            if (shopManager != null)
+            {
+                shopManager.AddCoins(coinsPerWave);
+            }
+
             currentWaveIndex++;
-            StartCoroutine(StartNextWave());
+
+            if (shopManager != null)
+            {
+                shopManager.OpenShop();
+            }
         }
     }
 }
+
+

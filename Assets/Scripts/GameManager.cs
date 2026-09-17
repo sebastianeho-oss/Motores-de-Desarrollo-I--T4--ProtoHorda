@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverUI;
     public GameObject winUI;
     public GameObject pauseUI;
+    public GameObject shopUI;
 
     [Header("Referencias del Jugador")]
     public GameObject player;
@@ -42,9 +43,11 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         bool isEndGameUIActive = (winUI != null && winUI.activeInHierarchy) ||
-                                (gameOverUI != null && gameOverUI.activeInHierarchy);
+                                 (gameOverUI != null && gameOverUI.activeInHierarchy);
 
-        bool isAnyUIActive = isEndGameUIActive || IsPaused;
+        bool isShopUIActive = shopUI != null && shopUI.activeInHierarchy;
+
+        bool isAnyUIActive = isEndGameUIActive || IsPaused || isShopUIActive;
 
         if (isAnyUIActive)
         {
