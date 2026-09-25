@@ -46,9 +46,13 @@ public class RocketLauncher : MonoBehaviour
 
     void Update()
     {
-        // Cancelar si no hay permiso, el jugador está muerto o el juego pausado
-        if (!canShoot || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused) return;
-             
+        // 🔒 BLOQUEO: Si la tienda está abierta, cancela el disparo inmediatamente
+        if ((ShopManager.Instance != null && ShopManager.Instance.IsShopOpen) ||
+            !canShoot || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused)
+        {
+            return;
+        }
+
         bool isTriggerPressed = inputActions.Player.Fire.IsPressed();
 
         if (isTriggerPressed && Time.time >= nextFireTime)

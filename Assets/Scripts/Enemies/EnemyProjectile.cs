@@ -13,46 +13,43 @@ public class EnemyProjectile : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-
-        // Asignar velocidad constante
         rb.linearVelocity = transform.forward * speed;
-
-        // Autodestrucción por tiempo si no choca con nada
         Destroy(gameObject, lifeTime);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        // Ignora si la bala toca a otro enemigo o a otra bala
         if (other.CompareTag("Enemy") || other.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
             return;
         }
 
-        // Busca PlayerHealth en el objeto impactado
-        PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
+        // Buscar PlayerShield primero
+        PlayerShield playerShield = other.GetComponent<PlayerShield>();
+        if (playerShield == null) playerShield = other.GetComponentInParent<PlayerShield>();
+        if (playerShield == null) playerShield = other.GetComponentInChildren<PlayerShield>();
 
-        if (playerHealth == null)
+        if (playerShield != null)
         {
-            playerHealth = other.GetComponentInParent<PlayerHealth>();
-        }
-
-        if (playerHealth == null)
-        {
-            playerHealth = other.GetComponentInChildren<PlayerHealth>();
-        }
-
-        // Si se encontró el PlayerHealth, aplicar daño
-        if (playerHealth != null)
-        {
-            playerHealth.TakeDamage(damage);
-            Debug.Log($"¡Proyectil enemigo dañó al jugador! -{damage} HP");
-
-            Destroy(gameObject); // Destruir la bala tras dañar
+            playerShield.TakeDamage(damage);
+            Debug.Log($"¡Proyectil enemigo impactó el escudo del jugador! -{damage}");
+            Destroy(gameObject);
             return;
         }
 
-        // Si choca contra el suelo, paredes u obstáculos del mapa (Ground, Environment, etc.)
+        // Respaldo por si no tiene escudo, buscar PlayerHealth directamente
+        PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
+        if (playerHealth == null) playerHealth = other.GetComponentInParent<PlayerHealth>();
+        if (playerHealth == null) playerHealth = other.GetComponentInChildren<PlayerHealth>();
+
+        if (playerHealth != null)
+        {
+            playerHealth.TakeDamage(damage);
+            Debug.Log($"¡Proyectil enemigo dañó la vida del jugador! -{damage}");
+            Destroy(gameObject);
+            return;
+        }
+
         if (!other.isTrigger)
         {
             Destroy(gameObject);

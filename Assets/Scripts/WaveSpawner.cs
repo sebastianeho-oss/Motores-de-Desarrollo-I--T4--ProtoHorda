@@ -4,11 +4,16 @@ using UnityEngine;
 
 public class WaveSpawner : MonoBehaviour
 {
-    [SerializeField] private ShopManager shopManager; 
-    [SerializeField] private int coinsPerWave = 100;//monedas tienda
+    [SerializeField] private ShopManager shopManager;
+
     [Header("Configuración de Olas y Spawns")]
     [SerializeField] private List<WaveData> waves;
     [SerializeField] private Transform[] spawnPoints;
+
+    [Header("Configuración de la Tienda (Estilo Killing Floor)")]
+    [SerializeField] private GameObject shopPodPrefab;
+    [SerializeField] private Transform[] shopSpawnPoints;
+    private GameObject activeShopPod;
 
     private int currentWaveIndex = 0;
     private int activeEnemiesCount = 0;
@@ -18,11 +23,9 @@ public class WaveSpawner : MonoBehaviour
     private float waveTimer = 0f;
     private bool isCountingDown = false;
 
-    // Nuevas variables para el cronómetro de la horda activa
     private float activeWaveTimer = 0f;
     private bool isWaveActive = false;
 
-    // Propiedades públicas para la Interfaz (UI)
     public int CurrentWaveNumber => currentWaveIndex + 1;
     public int TotalWaves => waves.Count;
     public int EnemiesRemaining => activeEnemiesCount;
@@ -30,8 +33,6 @@ public class WaveSpawner : MonoBehaviour
     public int TotalEnemiesInWave => totalEnemiesInCurrentWave;
     public float WaveTimer => waveTimer;
     public bool IsCountingDown => isCountingDown;
-
-    // Propiedades para el temporizador de la horda activa
     public float ActiveWaveTime => activeWaveTimer;
     public bool IsWaveActive => isWaveActive;
 
@@ -49,15 +50,10 @@ public class WaveSpawner : MonoBehaviour
 
     private void Update()
     {
-        // Si la horda está activa (ya pasaron los preparativos y empezó el combate), sumamos tiempo
         if (isWaveActive)
         {
             activeWaveTimer += Time.deltaTime;
         }
-    }
-    public void StartNextWaveFromShop()
-    {
-        StartCoroutine(StartNextWave());
     }
 
     private IEnumerator StartNextWave()
@@ -70,10 +66,12 @@ public class WaveSpawner : MonoBehaviour
 
         WaveData currentWave = waves[currentWaveIndex];
 
-        // Reiniciamos y configuramos el temporizador de descanso antes de la ola
+        // --- FASE DE DESCANSO / TIENDA ---
         waveTimer = currentWave.timeBeforeWave;
         isCountingDown = true;
-        isWaveActive = false; // Aseguramos que el cronómetro de combate esté apagado en la pausa
+        isWaveActive = false;
+
+        SpawnShopPod();
 
         while (waveTimer > 0)
         {
@@ -82,11 +80,12 @@ public class WaveSpawner : MonoBehaviour
         }
         isCountingDown = false;
 
-        // Inicia oficialmente la horda de combate
-        isWaveActive = true;
-        activeWaveTimer = 0f; // Reiniciamos el cronómetro de la horda actual
+        CloseAndDespawnShop();
 
-        // Crear y mezclar la lista de enemigos para esta ola
+        // --- FASE DE COMBATE ---
+        isWaveActive = true;
+        activeWaveTimer = 0f;
+
         List<GameObject> enemiesToSpawn = BuildEnemyList(currentWave);
         totalEnemiesInCurrentWave = enemiesToSpawn.Count;
         activeEnemiesCount = totalEnemiesInCurrentWave;
@@ -100,17 +99,40 @@ public class WaveSpawner : MonoBehaviour
 
             if (enemyInstance.TryGetComponent<EnemyHealth>(out EnemyHealth health))
             {
-                health.OnEnemyDied += OnEnemyKilled;
+                // Suscribimos la muerte del enemigo pasando el oro que otorga de manera individual
+                health.OnEnemyDiedWithReward += (coinReward) => OnEnemyKilled(coinReward);
             }
             else
             {
-                Debug.LogError($"El prefab {prefab.name} no tiene el componente EnemyHealth.");
+                Debug.LogError("El prefab " + prefab.name + " no tiene el componente EnemyHealth.");
             }
 
             yield return new WaitForSeconds(currentWave.spawnInterval);
         }
 
         isSpawning = false;
+    }
+
+    private void SpawnShopPod()
+    {
+        if (shopPodPrefab != null && shopSpawnPoints.Length > 0)
+        {
+            Transform randomPoint = shopSpawnPoints[Random.Range(0, shopSpawnPoints.Length)];
+            activeShopPod = Instantiate(shopPodPrefab, randomPoint.position, randomPoint.rotation);
+        }
+    }
+
+    private void CloseAndDespawnShop()
+    {
+        if (shopManager != null)
+        {
+            shopManager.ForceCloseShop();
+        }
+
+        if (activeShopPod != null)
+        {
+            Destroy(activeShopPod);
+        }
     }
 
     private List<GameObject> BuildEnemyList(WaveData wave)
@@ -136,30 +158,25 @@ public class WaveSpawner : MonoBehaviour
         return list;
     }
 
-    private void OnEnemyKilled()
+    private void OnEnemyKilled(int coinReward)
     {
         activeEnemiesCount--;
         enemiesKilledInCurrentWave++;
+
+        // Sumamos las monedas de forma inmediata al ShopManager cada vez que cae un enemigo
+        if (shopManager != null)
+        {
+            shopManager.AddCoins(coinReward);
+        }
 
         if (activeEnemiesCount <= 0 && !isSpawning)
         {
             isWaveActive = false;
 
-            Debug.Log($"¡Ola {currentWaveIndex + 1} completada en {activeWaveTimer:F2} segundos!");
-
-            if (shopManager != null)
-            {
-                shopManager.AddCoins(coinsPerWave);
-            }
+            Debug.Log("¡Ola " + (currentWaveIndex + 1) + " completada en " + activeWaveTimer.ToString("F2") + " segundos!");
 
             currentWaveIndex++;
-
-            if (shopManager != null)
-            {
-                shopManager.OpenShop();
-            }
+            StartCoroutine(StartNextWave());
         }
     }
 }
-
-

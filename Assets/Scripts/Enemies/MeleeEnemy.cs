@@ -5,31 +5,32 @@ using UnityEngine.AI;
 public class MeleeEnemy : MonoBehaviour
 {
     [Header("Ajustes de Combate")]
-    public float attackRange = 2f;       // Distancia a la que se detiene para atacar
-    public float attackDamage = 15f;    // Daño por golpe
-    public float attackRate = 1.2f;     // Cadencia de ataque (segundos entre golpes)
+    public float attackRange = 2f;
+    public float attackDamage = 15f;
+    public float attackRate = 1.2f;
 
     [Header("Referencias")]
     public string playerTag = "Player";
 
     private NavMeshAgent agent;
     private Transform playerTransform;
-    private PlayerHealth playerHealth;
+    private PlayerShield playerShield; // Cambiado a PlayerShield
+    private PlayerHealth playerHealth; // Respaldo opcional
     private float nextAttackTime = 0f;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
 
-        // Buscar al jugador por Tag
         GameObject playerObj = GameObject.FindGameObjectWithTag(playerTag);
         if (playerObj != null)
         {
             playerTransform = playerObj.transform;
+            // Buscamos primero el escudo y también la salud por respaldo
+            playerShield = playerObj.GetComponent<PlayerShield>();
             playerHealth = playerObj.GetComponent<PlayerHealth>();
         }
 
-        // Configurar distancia de frenado en el NavMeshAgent
         agent.stoppingDistance = attackRange - 0.2f;
     }
 
@@ -39,10 +40,8 @@ public class MeleeEnemy : MonoBehaviour
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
-        // 1. Moverse hacia el jugador
         agent.SetDestination(playerTransform.position);
 
-        // 2. Si está en rango de ataque, orientarse y atacar
         if (distanceToPlayer <= attackRange)
         {
             RotateTowardsPlayer();
@@ -58,7 +57,7 @@ public class MeleeEnemy : MonoBehaviour
     void RotateTowardsPlayer()
     {
         Vector3 direction = (playerTransform.position - transform.position).normalized;
-        direction.y = 0; // Evitar que el enemigo se incline hacia arriba/abajo
+        direction.y = 0;
         if (direction != Vector3.zero)
         {
             Quaternion lookRotation = Quaternion.LookRotation(direction);
@@ -68,10 +67,22 @@ public class MeleeEnemy : MonoBehaviour
 
     void Attack()
     {
-        if (playerHealth != null && !playerHealth.isDead)
+        // Validar si el jugador no está muerto antes de atacar
+        bool isDead = playerHealth != null && playerHealth.isDead;
+
+        if (!isDead)
         {
-            playerHealth.TakeDamage(attackDamage);
-            Debug.Log($"¡Enemigo cuerpo a cuerpo atacó al jugador haciendo {attackDamage} de daño!");
+            // Atacamos primero al escudo si existe; si no, directamente a la vida
+            if (playerShield != null)
+            {
+                playerShield.TakeDamage(attackDamage);
+                Debug.Log($"¡MeleeEnemy atacó el escudo del jugador con {attackDamage} de daño!");
+            }
+            else if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(attackDamage);
+                Debug.Log($"¡MeleeEnemy atacó la vida directa del jugador con {attackDamage} de daño!");
+            }
         }
     }
 

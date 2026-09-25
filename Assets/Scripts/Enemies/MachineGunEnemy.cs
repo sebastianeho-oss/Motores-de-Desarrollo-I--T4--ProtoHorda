@@ -6,20 +6,20 @@ using UnityEngine.AI;
 public class MachineGunEnemy : MonoBehaviour
 {
     [Header("Ajustes de Disparo (Ametralladora)")]
-    public float shootingRange = 15f;      // Rango de visión/disparo
-    public float fireRate = 0.1f;         // Cadencia rápida (ej: 0.1s = 10 balas/segundo)
-    public float damage = 5f;             // Daño por cada impacto
-    public float bulletSpread = 0.05f;     // Dispersión/Imprecisión de las balas
-    public float tracerDuration = 0.04f;   // Cuánto tiempo dura visible la línea del disparo
+    public float shootingRange = 15f;
+    public float fireRate = 0.1f;
+    public float damage = 5f;
+    public float bulletSpread = 0.05f;
+    public float tracerDuration = 0.04f;
 
     [Header("Capas de Colisión")]
-    public LayerMask collisionLayers;      // Selecciona aquí Ground y Environment en el Inspector
+    public LayerMask collisionLayers;
 
     [Header("Referencias Visuales y Componentes")]
-    public Transform firePoint;            // Punto de origen del disparo (cañón)
-    public LineRenderer lineRenderer;      // Componente para dibujar la trazadora
-    public ParticleSystem muzzleFlash;    // (Opcional) Partículas de chispas en el cañón
-    public GameObject impactEffect;        // (Opcional) Prefab de chispas/polvo al impactar
+    public Transform firePoint;
+    public LineRenderer lineRenderer;
+    public ParticleSystem muzzleFlash;
+    public GameObject impactEffect;
     public string playerTag = "Player";
 
     private NavMeshAgent agent;
@@ -38,7 +38,6 @@ public class MachineGunEnemy : MonoBehaviour
 
         agent.stoppingDistance = shootingRange - 2f;
 
-        // Asegurar que el LineRenderer esté oculto al iniciar
         if (lineRenderer != null)
         {
             lineRenderer.enabled = false;
@@ -51,10 +50,8 @@ public class MachineGunEnemy : MonoBehaviour
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
-        // Moverse hacia el jugador
         agent.SetDestination(playerTransform.position);
 
-        // Si está en rango de disparo
         if (distanceToPlayer <= shootingRange)
         {
             RotateTowardsPlayer();
@@ -82,11 +79,9 @@ public class MachineGunEnemy : MonoBehaviour
     {
         if (firePoint == null) return;
 
-        //Calcula dirección hacia el centro del jugador + Dispersión
-        Vector3 targetCenter = playerTransform.position + Vector3.up * 1f; // Apuntar al pecho
+        Vector3 targetCenter = playerTransform.position + Vector3.up * 1f;
         Vector3 baseDirection = (targetCenter - firePoint.position).normalized;
 
-        // Añadir imprecisión aleatoria
         Vector3 spreadDirection = baseDirection + new Vector3(
             Random.Range(-bulletSpread, bulletSpread),
             Random.Range(-bulletSpread, bulletSpread),
@@ -95,24 +90,31 @@ public class MachineGunEnemy : MonoBehaviour
 
         Vector3 endPoint;
 
-        // Realizar el Raycast incluyendo la LayerMask (Ground y Environment)        
         if (Physics.Raycast(firePoint.position, spreadDirection, out RaycastHit hit, shootingRange, collisionLayers))
         {
             endPoint = hit.point;
 
-            // Comprobar si golpeó al jugador
-            PlayerHealth playerHealth = hit.collider.GetComponent<PlayerHealth>();
-            if (playerHealth == null)
+            // Buscar PlayerShield primero, y PlayerHealth como respaldo en el objeto impactado o padres
+            PlayerShield playerShield = hit.collider.GetComponent<PlayerShield>();
+            if (playerShield == null) playerShield = hit.collider.GetComponentInParent<PlayerShield>();
+            if (playerShield == null) playerShield = hit.collider.GetComponentInChildren<PlayerShield>();
+
+            if (playerShield != null)
             {
-                playerHealth = hit.collider.GetComponentInParent<PlayerHealth>();
+                playerShield.TakeDamage(damage);
+            }
+            else
+            {
+                PlayerHealth playerHealth = hit.collider.GetComponent<PlayerHealth>();
+                if (playerHealth == null) playerHealth = hit.collider.GetComponentInParent<PlayerHealth>();
+                if (playerHealth == null) playerHealth = hit.collider.GetComponentInChildren<PlayerHealth>();
+
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(damage);
+                }
             }
 
-            if (playerHealth != null)
-            {
-                playerHealth.TakeDamage(damage);
-            }
-
-            // Instanciar efecto visual de impacto
             if (impactEffect != null)
             {
                 Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal));
@@ -120,11 +122,9 @@ public class MachineGunEnemy : MonoBehaviour
         }
         else
         {
-            // Si no golpea nada dentro del rango, la línea va hasta el límite máximo
             endPoint = firePoint.position + spreadDirection * shootingRange;
         }
 
-        // Efectos visuales de disparo
         if (muzzleFlash != null)
         {
             muzzleFlash.Play();

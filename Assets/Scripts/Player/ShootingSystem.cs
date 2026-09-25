@@ -67,8 +67,13 @@ public class ShootingSystem : MonoBehaviour
 
     void Update()
     {
-        if (!canShoot || isShootingBurst || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused) return;
-                
+        // 🔒 BLOQUEO: Si la tienda está abierta, el juego está pausado, el jugador murió o no hay permisos, frena aquí.
+        if ((ShopManager.Instance != null && ShopManager.Instance.IsShopOpen) ||
+            !canShoot || isShootingBurst || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused)
+        {
+            return;
+        }
+
         bool isTriggerPressed = (fireMode == FireMode.FullAutomatic)
             ? inputActions.Player.Fire.IsPressed()
             : inputActions.Player.Fire.WasPressedThisFrame();

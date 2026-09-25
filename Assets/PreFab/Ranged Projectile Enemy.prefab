@@ -184,6 +184,7 @@ MonoBehaviour:
   maxHealth: 100
   currentHealth: 0
   isDead: 0
+  coinReward: 30
 --- !u!114 &5312754605339129369
 MonoBehaviour:
   m_ObjectHideFlags: 0

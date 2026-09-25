@@ -295,6 +295,7 @@ MonoBehaviour:
   maxHealth: 100
   currentHealth: 0
   isDead: 0
+  coinReward: 25
 --- !u!114 &6221618414939020610
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -312,6 +313,9 @@ MonoBehaviour:
   damage: 5
   bulletSpread: 0.05
   tracerDuration: 0.04
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 0
   firePoint: {fileID: 1722468020077195834}
   lineRenderer: {fileID: 5041487941422215332}
   muzzleFlash: {fileID: 0}
