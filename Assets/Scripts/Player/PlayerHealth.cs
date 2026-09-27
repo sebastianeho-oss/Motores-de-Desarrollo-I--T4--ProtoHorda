@@ -6,6 +6,10 @@ public class PlayerHealth : MonoBehaviour
     public float maxHealth = 100f;
     public float currentHealth;
 
+    [Header("Mitigación por Vida Baja")]
+    [SerializeField] private float lowHealthThreshold = 25f; // Umbral de activación (25 puntos)
+    [SerializeField] private float damageReductionMultiplier = 0.10f; // Multiplicador (10% del daño entra, es decir, se reduce un 90%)
+
     [Header("Estados y Permisos")]
     public bool isInvincible = false; // Interruptor de invencibilidad
     public bool isDead = false;
@@ -28,10 +32,18 @@ public class PlayerHealth : MonoBehaviour
         // Si el jugador está muerto o la invencibilidad está activa, ignorar el daño
         if (isDead || isInvincible) return;
 
-        currentHealth -= amount;
+        // Comprobamos si la salud actual es menor o igual al umbral (25 puntos)
+        float finalDamage = amount;
+        if (currentHealth <= lowHealthThreshold)
+        {
+            finalDamage = amount * damageReductionMultiplier;
+            Debug.Log($"¡Activada la reducción de daño por vida baja! Daño original: {amount} -> Daño reducido (90% menos): {finalDamage}");
+        }
+
+        currentHealth -= finalDamage;
         currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
 
-        Debug.Log($"Jugador recibió {amount} de daño. Salud actual: {currentHealth}");
+        Debug.Log($"Jugador recibió {finalDamage} de daño. Salud actual: {currentHealth}");
 
         if (currentHealth <= 0f)
         {
