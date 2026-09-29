@@ -9,9 +9,8 @@ public class EnemyHealth : MonoBehaviour
     public bool isDead = false;
 
     [Header("Economía de la Tienda")]
-    [SerializeField] private int coinReward = 15; // 🪙 Monedas que otorga este enemigo al morir
+    [SerializeField] private int coinReward = 15;
 
-    // Evento que notifica al WaveSpawner enviando la cantidad de monedas correspondientes
     public event Action<int> OnEnemyDiedWithReward;
 
     void Start()
@@ -26,8 +25,6 @@ public class EnemyHealth : MonoBehaviour
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
 
-        Debug.Log(gameObject.name + " recibió " + amount + " de daño. Vida restante: " + currentHealth);
-
         if (currentHealth <= 0f)
         {
             Die();
@@ -37,10 +34,15 @@ public class EnemyHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
-        Debug.Log(gameObject.name + " ha muerto.");
 
-        // Notificar al WaveSpawner enviando la recompensa de monedas de este enemigo
+        // Notificar monedas
         OnEnemyDiedWithReward?.Invoke(coinReward);
+
+        // Notificar activación de pasivas al ShopManager
+        if (ShopManager.Instance != null)
+        {
+            ShopManager.Instance.OnEnemyKilled();
+        }
 
         Destroy(gameObject);
     }

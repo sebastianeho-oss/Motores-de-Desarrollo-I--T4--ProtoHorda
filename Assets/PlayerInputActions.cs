@@ -261,6 +261,16 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""initialStateCheck"": false,
                     ""priority"": 0
+                },
+                {
+                    ""name"": ""Pass Time"",
+                    ""type"": ""Button"",
+                    ""id"": ""fc3d88f7-bba9-4f22-931f-85aeb0dc9591"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
                 }
             ],
             ""bindings"": [
@@ -626,6 +636,28 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""212c826a-6ce2-4650-acbf-628d76f5b43c"",
+                    ""path"": ""<Keyboard>/t"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pass Time"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""221d94dd-3549-427d-8e7c-1888b8874bc6"",
+                    ""path"": ""<Gamepad>/select"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Pass Time"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -673,6 +705,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_Weapon5 = m_Player.FindAction("Weapon 5", throwIfNotFound: true);
         m_Player_Weapon6 = m_Player.FindAction("Weapon 6", throwIfNotFound: true);
         m_Player_Pause = m_Player.FindAction("Pause", throwIfNotFound: true);
+        m_Player_PassTime = m_Player.FindAction("Pass Time", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -770,6 +803,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Weapon5;
     private readonly InputAction m_Player_Weapon6;
     private readonly InputAction m_Player_Pause;
+    private readonly InputAction m_Player_PassTime;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -850,6 +884,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Pause => m_Wrapper.m_Player_Pause;
         /// <summary>
+        /// Provides access to the underlying input action "Player/PassTime".
+        /// </summary>
+        public InputAction @PassTime => m_Wrapper.m_Player_PassTime;
+        /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
         public InputActionMap Get() { return m_Wrapper.m_Player; }
@@ -926,6 +964,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Pause.started += instance.OnPause;
             @Pause.performed += instance.OnPause;
             @Pause.canceled += instance.OnPause;
+            @PassTime.started += instance.OnPassTime;
+            @PassTime.performed += instance.OnPassTime;
+            @PassTime.canceled += instance.OnPassTime;
         }
 
         /// <summary>
@@ -988,6 +1029,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Pause.started -= instance.OnPause;
             @Pause.performed -= instance.OnPause;
             @Pause.canceled -= instance.OnPause;
+            @PassTime.started -= instance.OnPassTime;
+            @PassTime.performed -= instance.OnPassTime;
+            @PassTime.canceled -= instance.OnPassTime;
         }
 
         /// <summary>
@@ -1160,5 +1204,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnPause(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Pass Time" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPassTime(InputAction.CallbackContext context);
     }
 }

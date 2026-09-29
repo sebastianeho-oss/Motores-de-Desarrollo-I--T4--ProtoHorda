@@ -27,22 +27,17 @@ public class MovementPlayerController : MonoBehaviour
     public float groundDistance = 0.2f;
     public LayerMask groundMask;
     public PlayerHealth playerHealth;
-
-    //Audio del personaje
     public PlayerSoundController playerSoundController;
-    
 
     private CharacterController controller;
     private Animator animator;
     private Vector3 velocity;
     private bool isGrounded;
 
-    // Variable para almacenar la velocidad horizontal que trae al saltar (Inercia)
     private float horizontalAirSpeed;
 
     public bool IsCrouching { get; private set; }
 
-    // Propiedad que evalua si el personaje se desplaza activamente y si tiene permiso para hacerlo
     public bool IsMoving
     {
         get
@@ -142,12 +137,10 @@ public class MovementPlayerController : MonoBehaviour
                     IsCrouching = false;
                 }
 
-                // Definimos la velocidad según si está en el suelo o en el aire
                 float currentSpeed = walkSpeed;
 
                 if (isGrounded)
                 {
-                    // En el suelo aplicamos la lógica normal con sprint permitido
                     bool wantsToSprint = sprintHeld && !isAiming && !IsCrouching;
 
                     if (wantsToSprint) currentSpeed = sprintSpeed;
@@ -155,16 +148,30 @@ public class MovementPlayerController : MonoBehaviour
 
                     if (isAiming) currentSpeed *= aimSpeedMultiplier;
 
-                    // Guardamos esta velocidad por si decide saltar en este preciso instante
+                    // --- PASIVAS DE VELOCIDAD ---
+                    if (ShopManager.Instance != null)
+                    {
+                        if (ShopManager.Instance.currentPassive == PassiveType.Frenzy && ShopManager.Instance.frenzyActive)
+                        {
+                            currentSpeed *= 1.60f; // +60% de velocidad al matar
+                        }
+                        else if (ShopManager.Instance.currentPassive == PassiveType.Tank)
+                        {
+                            currentSpeed *= 0.70f; // 30% más lento (se mueve al 70% de su velocidad)
+                        }
+                    }
+
                     horizontalAirSpeed = currentSpeed;
                 }
                 else
                 {
-                    // En el aire, mantenemos la inercia con la que despegó (horizontalAirSpeed), 
-                    // pero limitamos el control aéreo para que no pueda acelerar a sprint si venía caminando.
-                    // Si caminaba (<= walkSpeed), se queda en walkSpeed; si venía corriendo, mantiene esa inercia.
                     currentSpeed = Mathf.Max(horizontalAirSpeed, walkSpeed);
                     if (isAiming) currentSpeed *= aimSpeedMultiplier;
+
+                    if (ShopManager.Instance != null && ShopManager.Instance.currentPassive == PassiveType.Tank)
+                    {
+                        currentSpeed *= 0.70f; // 30% más lento en el aire
+                    }
                 }
 
                 Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
@@ -177,32 +184,23 @@ public class MovementPlayerController : MonoBehaviour
             controller.Move(velocity * Time.deltaTime);
         }
 
-        if(IsMoving && isGrounded)
+        if (IsMoving && isGrounded)
         {
             stepTimer -= Time.deltaTime;
 
-            if(stepTimer <= 0f)
+            if (stepTimer <= 0f)
             {
-                playerSoundController.playMove();
-                if(IsCrouching)
-                {
-                    stepTimer = crouchStepInterval;
-                }
-                else if (sprintHeld)
-                {
-                    stepTimer = sprintStepInterval;
-                }
-                else
-                {
-                    stepTimer = walkStepInterval;
-                }
+                if (playerSoundController != null) playerSoundController.playMove();
+                if (IsCrouching) stepTimer = crouchStepInterval;
+                else if (sprintHeld) stepTimer = sprintStepInterval;
+                else stepTimer = walkStepInterval;
             }
         }
         else
         {
             stepTimer = 0f;
         }
-        
+
         if (animator != null)
         {
             animator.SetFloat("MoveX", moveInput.x);
@@ -225,7 +223,6 @@ public class MovementPlayerController : MonoBehaviour
         bool isAlive = (playerHealth == null || !playerHealth.isDead);
         if (canJump && isAlive && !GameManager.IsPaused && isGrounded)
         {
-            // Antes de saltar, evaluamos qué velocidad exacta tenía para conservarla como inercia en el aire
             bool isAiming = (cameraController != null && cameraController.IsAiming);
             bool wantsToSprint = sprintHeld && !isAiming && !IsCrouching;
 
@@ -236,17 +233,17 @@ public class MovementPlayerController : MonoBehaviour
             if (isAiming) horizontalAirSpeed *= aimSpeedMultiplier;
 
             IsCrouching = false;
-            playerSoundController.playJump();
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        }
-    }
+            if (playerSoundController != null) playerSoundController.playJump();
 
-    void OnDrawGizmosSelected()
-    {
-        if (groundCheck != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(groundCheck.position, groundDistance);
+            float effectiveJumpHeight = jumpHeight;
+
+            // Pasiva Tanque: reduce drásticamente el salto
+            if (ShopManager.Instance != null && ShopManager.Instance.currentPassive == PassiveType.Tank)
+            {
+                effectiveJumpHeight *= 0.30f;
+            }
+
+            velocity.y = Mathf.Sqrt(effectiveJumpHeight * -2f * gravity);
         }
     }
 }

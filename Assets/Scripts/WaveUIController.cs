@@ -17,13 +17,11 @@ public class WaveUIController : MonoBehaviour
     {
         if (waveSpawner == null) return;
 
-        // Actualizar número de oleada
         if (waveText != null)
         {
             waveText.text = $"Oleada: {waveSpawner.CurrentWaveNumber} / {waveSpawner.TotalWaves}";
         }
 
-        // Actualizar enemigos restantes y eliminados
         if (enemiesRemainingText != null)
         {
             enemiesRemainingText.text = $"Enemigos restantes: {waveSpawner.EnemiesRemaining}";
@@ -34,7 +32,6 @@ public class WaveUIController : MonoBehaviour
             enemiesKilledText.text = $"Eliminados: {waveSpawner.EnemiesKilled} / {waveSpawner.TotalEnemiesInWave}";
         }
 
-        // Actualizar temporizador de descanso (cuenta regresiva antes de empezar)
         if (countdownTimerText != null)
         {
             if (waveSpawner.IsCountingDown)
@@ -48,23 +45,21 @@ public class WaveUIController : MonoBehaviour
             }
         }
 
-        // Actualizar temporizador del tiempo transcurrido *durante* la horda
+        // Muestra la cuenta atrás de la horda activa
         if (activeWaveTimerText != null)
         {
             if (waveSpawner.IsWaveActive)
             {
                 activeWaveTimerText.gameObject.SetActive(true);
 
-                // Formatear segundos a minutos:segundos (ej: 02:15)
-                float time = waveSpawner.ActiveWaveTime;
+                float time = waveSpawner.ActiveWaveRemainingTime;
                 int minutes = Mathf.FloorToInt(time / 60f);
                 int seconds = Mathf.FloorToInt(time % 60f);
                 activeWaveTimerText.text = $"{minutes:00}:{seconds:00}";
             }
             else
             {
-                // Opcional: Ocultarlo o mostrar en ceros cuando no esté activa la horda
-                activeWaveTimerText.text = "00:00";
+                activeWaveTimerText.gameObject.SetActive(false);
             }
         }
     }

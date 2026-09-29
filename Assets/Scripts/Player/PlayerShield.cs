@@ -6,12 +6,12 @@ public class PlayerShield : MonoBehaviour
     public float maxShield = 100f;
     public float currentShield;
 
-    [Header("Mitigación de Daño")]
+    [Header("Mitigación de Daño Base")]
     [Range(0f, 1f)]
-    public float shieldMitigation = 0.70f; // 70% mitigado por el escudo
+    public float shieldMitigation = 0.70f; // 70% mitigado por el escudo por defecto
 
     [Header("Referencias")]
-    public PlayerHealth playerHealth; // Referencia a tu PlayerHealth existente
+    public PlayerHealth playerHealth;
 
     void Start()
     {
@@ -23,28 +23,71 @@ public class PlayerShield : MonoBehaviour
         }
     }
 
-    // Método para recibir daño (reemplaza o actúa como puente antes de PlayerHealth)
     public void TakeDamage(float amount)
     {
         if (amount <= 0f) return;
-
-        // Si el jugador tiene vida o escudo activo (puedes validar si está muerto con playerHealth)
         if (playerHealth != null && playerHealth.isDead) return;
 
+        float incomingDamage = amount;
+
+        // --- PENALIZACIONES DE DAÑO RECIBIDO POR PASIVAS ---
+        if (ShopManager.Instance != null)
+        {
+            var passive = ShopManager.Instance.currentPassive;
+
+            if (passive == PassiveType.Frenzy && ShopManager.Instance.frenzyActive)
+            {
+                incomingDamage *= ShopManager.Instance.frenzyIncomingDamageMultiplier; // Daño mayor en Frenesí
+            }
+            else if (passive == PassiveType.Greed)
+            {
+                incomingDamage *= ShopManager.Instance.greedIncomingDamageMultiplier; // Daño mayor en Codicia
+            }
+        }
+
+        // --- PASIVA 2: TANQUE ---
+        if (ShopManager.Instance != null && ShopManager.Instance.currentPassive == PassiveType.Tank)
+        {
+            if (currentShield > 0f)
+            {
+                // El daño se dirige 100% al escudo y se reduce en un 80% (entra solo el 20%)
+                float damageToShield = incomingDamage * 0.20f;
+                currentShield -= damageToShield;
+
+                if (currentShield <= 0f)
+                {
+                    currentShield = 0f;
+                    Debug.Log("¡El escudo del Tanque se ha roto!");
+                }
+
+                // La salud permanece 100% intacta mientras exista escudo
+                return;
+            }
+            else
+            {
+                // Con escudo roto (0), el daño pasa a la salud pero reducido un 70% (entra el 30%)
+                float damageToHealth = incomingDamage * 0.30f;
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(damageToHealth);
+                }
+                return;
+            }
+        }
+
+        // --- COMPORTAMIENTO NORMAL (SIN PASIVA TANQUE) ---
         if (currentShield > 0f)
         {
-            float damageToShield = amount * shieldMitigation;
-            float damageToHealth = amount * (1f - shieldMitigation);
+            float damageToShield = incomingDamage * shieldMitigation;
+            float damageToHealth = incomingDamage * (1f - shieldMitigation);
 
             currentShield -= damageToShield;
 
-            // Si el daño quiebra el escudo por completo
             if (currentShield <= 0f)
             {
-                float excessDamage = -currentShield; // Lo que sobró de romper el escudo
+                float excessDamage = -currentShield;
                 currentShield = 0f;
 
-                // Aplicamos el daño a la salud sumando el excedente o el 30% restante
                 if (playerHealth != null)
                 {
                     playerHealth.TakeDamage(damageToHealth + excessDamage);
@@ -52,24 +95,18 @@ public class PlayerShield : MonoBehaviour
             }
             else
             {
-                // El escudo sigue con vida, aplicamos el 30% restante a la salud
                 if (playerHealth != null)
                 {
                     playerHealth.TakeDamage(damageToHealth);
                 }
             }
-
-            Debug.Log($"Escudo mitigó el impacto. Escudo actual: {currentShield} / {maxShield}");
         }
         else
         {
-            // Si el escudo está en 0, el daño pasa al 100% a la vida del jugador
             if (playerHealth != null)
             {
-                playerHealth.TakeDamage(amount);
+                playerHealth.TakeDamage(incomingDamage);
             }
-
-            Debug.Log("¡Escudo agotado! El daño pasó íntegro (100%) a la vida.");
         }
     }
 

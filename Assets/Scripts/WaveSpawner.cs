@@ -23,8 +23,10 @@ public class WaveSpawner : MonoBehaviour
     private float waveTimer = 0f;
     private bool isCountingDown = false;
 
-    private float activeWaveTimer = 0f;
+    private float activeWaveRemainingTime = 0f;
     private bool isWaveActive = false;
+
+    private PlayerInputActions inputActions;
 
     public int CurrentWaveNumber => currentWaveIndex + 1;
     public int TotalWaves => waves.Count;
@@ -33,8 +35,17 @@ public class WaveSpawner : MonoBehaviour
     public int TotalEnemiesInWave => totalEnemiesInCurrentWave;
     public float WaveTimer => waveTimer;
     public bool IsCountingDown => isCountingDown;
-    public float ActiveWaveTime => activeWaveTimer;
+    public float ActiveWaveRemainingTime => activeWaveRemainingTime;
     public bool IsWaveActive => isWaveActive;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+        inputActions.Player.PassTime.performed += _ => SkipCountdown();
+    }
+
+    private void OnEnable() => inputActions.Enable();
+    private void OnDisable() => inputActions.Disable();
 
     private void Start()
     {
@@ -52,7 +63,21 @@ public class WaveSpawner : MonoBehaviour
     {
         if (isWaveActive)
         {
-            activeWaveTimer += Time.deltaTime;
+            activeWaveRemainingTime -= Time.deltaTime;
+
+            if (activeWaveRemainingTime <= 0f)
+            {
+                activeWaveRemainingTime = 0f;
+            }
+        }
+    }
+
+    public void SkipCountdown()
+    {
+        // Solo permite omitir el tiempo si está en la cuenta regresiva antes de iniciar la oleada
+        if (isCountingDown)
+        {
+            waveTimer = 0f;
         }
     }
 
@@ -84,7 +109,7 @@ public class WaveSpawner : MonoBehaviour
 
         // --- FASE DE COMBATE ---
         isWaveActive = true;
-        activeWaveTimer = 0f;
+        activeWaveRemainingTime = currentWave.waveDuration;
 
         List<GameObject> enemiesToSpawn = BuildEnemyList(currentWave);
         totalEnemiesInCurrentWave = enemiesToSpawn.Count;
@@ -99,7 +124,6 @@ public class WaveSpawner : MonoBehaviour
 
             if (enemyInstance.TryGetComponent<EnemyHealth>(out EnemyHealth health))
             {
-                // Suscribimos la muerte del enemigo pasando el oro que otorga de manera individual
                 health.OnEnemyDiedWithReward += (coinReward) => OnEnemyKilled(coinReward);
             }
             else
@@ -163,7 +187,6 @@ public class WaveSpawner : MonoBehaviour
         activeEnemiesCount--;
         enemiesKilledInCurrentWave++;
 
-        // Sumamos las monedas de forma inmediata al ShopManager cada vez que cae un enemigo
         if (shopManager != null)
         {
             shopManager.AddCoins(coinReward);
@@ -173,7 +196,7 @@ public class WaveSpawner : MonoBehaviour
         {
             isWaveActive = false;
 
-            Debug.Log("¡Ola " + (currentWaveIndex + 1) + " completada en " + activeWaveTimer.ToString("F2") + " segundos!");
+            Debug.Log("¡Ola " + (currentWaveIndex + 1) + " completada!");
 
             currentWaveIndex++;
             StartCoroutine(StartNextWave());

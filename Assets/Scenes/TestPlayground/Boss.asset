@@ -17,3 +17,4 @@ MonoBehaviour:
     count: 1
   spawnInterval: 1
   timeBeforeWave: 40
+  waveDuration: 300

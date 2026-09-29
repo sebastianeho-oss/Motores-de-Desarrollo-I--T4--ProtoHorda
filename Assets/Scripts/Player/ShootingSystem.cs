@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class ShootingSystem : MonoBehaviour
 {
@@ -16,10 +15,9 @@ public class ShootingSystem : MonoBehaviour
     public PlayerHealth playerHealth;
 
     [Header("Modo de Disparo")]
-    [Tooltip("Elige el comportamiento de disparo del arma.")]
     public FireMode fireMode = FireMode.FullAutomatic;
 
-    [Header("Ajustes de Ráfaga (Solo si FireMode = Burst)")]
+    [Header("Ajustes de Ráfaga")]
     public int burstCount = 3;
     public float burstDelay = 0.08f;
 
@@ -47,27 +45,15 @@ public class ShootingSystem : MonoBehaviour
 
     void Start()
     {
-        if (lineRenderer != null)
-        {
-            lineRenderer.enabled = false;
-        }
-
-        if (mainCamera == null)
-        {
-            mainCamera = Camera.main;
-        }
+        if (lineRenderer != null) lineRenderer.enabled = false;
+        if (mainCamera == null) mainCamera = Camera.main;
 
         weaponAmmo = GetComponent<WeaponAmmo>();
-
-        if (playerHealth == null)
-        {
-            playerHealth = GetComponentInParent<PlayerHealth>();
-        }
+        if (playerHealth == null) playerHealth = GetComponentInParent<PlayerHealth>();
     }
 
     void Update()
     {
-        // 🔒 BLOQUEO: Si la tienda está abierta, el juego está pausado, el jugador murió o no hay permisos, frena aquí.
         if ((ShopManager.Instance != null && ShopManager.Instance.IsShopOpen) ||
             !canShoot || isShootingBurst || (playerHealth != null && playerHealth.isDead) || GameManager.IsPaused)
         {
@@ -139,14 +125,8 @@ public class ShootingSystem : MonoBehaviour
         Vector3 targetPoint;
         bool hasCameraHit = Physics.Raycast(cameraRay, out RaycastHit cameraHit, maxShootDistance, shootableMask);
 
-        if (hasCameraHit)
-        {
-            targetPoint = cameraHit.point;
-        }
-        else
-        {
-            targetPoint = cameraRay.GetPoint(maxShootDistance);
-        }
+        if (hasCameraHit) targetPoint = cameraHit.point;
+        else targetPoint = cameraRay.GetPoint(maxShootDistance);
 
         Vector3 shootDirection = (targetPoint - firePoint.position).normalized;
         Vector3 finalImpactPoint = targetPoint;
@@ -169,26 +149,23 @@ public class ShootingSystem : MonoBehaviour
         if (hitCollider != null)
         {
             EnemyHealth enemyHealth = hitCollider.GetComponent<EnemyHealth>();
-            if (enemyHealth == null)
-            {
-                enemyHealth = hitCollider.GetComponentInParent<EnemyHealth>();
-            }
+            if (enemyHealth == null) enemyHealth = hitCollider.GetComponentInParent<EnemyHealth>();
 
             if (enemyHealth != null)
             {
-                enemyHealth.TakeDamage(damage);
+                // Multiplicador de daño según las cargas acumuladas del Tanque
+                float finalDamage = damage;
+                if (ShopManager.Instance != null)
+                {
+                    finalDamage *= ShopManager.Instance.GetPlayerDamageMultiplier();
+                }
+
+                enemyHealth.TakeDamage(finalDamage);
             }
         }
 
-        if (lineRenderer != null)
-        {
-            StartCoroutine(RenderTracerLine(firePoint.position, finalImpactPoint));
-        }
-
-        if (weaponRecoil != null)
-        {
-            weaponRecoil.TriggerRecoil();
-        }
+        if (lineRenderer != null) StartCoroutine(RenderTracerLine(firePoint.position, finalImpactPoint));
+        if (weaponRecoil != null) weaponRecoil.TriggerRecoil();
     }
 
     private IEnumerator RenderTracerLine(Vector3 startPoint, Vector3 endPoint)

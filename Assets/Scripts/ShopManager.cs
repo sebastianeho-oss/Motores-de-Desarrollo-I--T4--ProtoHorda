@@ -1,19 +1,22 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
+
+// Enumerador para definir la pasiva equipada (Solo una a la vez)
+public enum PassiveType { None, Frenzy, Tank, Greed }
 
 public class ShopManager : MonoBehaviour
 {
-    // Patrón Singleton para acceso global rápido
     public static ShopManager Instance { get; private set; }
 
     [Header("Economía")]
     [SerializeField] private int coins = 0;
 
     [Header("Tienda UI (Menús y Paneles)")]
-    [SerializeField] private GameObject shopPanel;             // Menú principal de la tienda
-    [SerializeField] private GameObject mainShopButtons;       // Contenedor de los botones principales (Atributos / Pasivas)
-    [SerializeField] private GameObject attributesSectionPanel;// Sección que contiene Velocidad, Vida y Escudo
-    [SerializeField] private GameObject passiveSectionPanel;   // Sección para Efectos Pasivos (solo interfaz)
+    [SerializeField] private GameObject shopPanel;
+    [SerializeField] private GameObject mainShopButtons;
+    [SerializeField] private GameObject attributesSectionPanel;
+    [SerializeField] private GameObject passiveSectionPanel;
 
     [Header("Textos UI General")]
     [SerializeField] private TextMeshProUGUI coinsText;
@@ -48,6 +51,30 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private int maxShieldLevels = 3;
     private int shieldLevel = 0;
 
+    [Header("--- SISTEMA DE PASIVAS ---")]
+    public PassiveType currentPassive = PassiveType.None;
+
+    [Header("Precios de Pasivas (Monedas)")]
+    [SerializeField] private int frenzyPrice = 300;
+    [SerializeField] private int tankPrice = 400;
+    [SerializeField] private int greedPrice = 500;
+
+    [Header("Pasiva 1: Frenesí")]
+    public float frenzyDuration = 5f;
+    public bool frenzyActive = false;
+    public float frenzyIncomingDamageMultiplier = 1.5f;
+    public float frenzyRecoilMultiplier = 1.6f;
+    private Coroutine frenzyCoroutine;
+
+    [Header("Pasiva 2: Tanque")]
+    public int tankKillStacks = 0;
+    public int maxTankStacks = 10;
+    public float tankStackDuration = 20f; // Tiempo de duración de las acumulaciones (20 segundos)
+    private Coroutine tankTimerCoroutine;
+
+    [Header("Pasiva 3: Codicia")]
+    public float greedIncomingDamageMultiplier = 1.8f;
+
     private bool isShopOpen = false;
 
     public int Coins => coins;
@@ -58,6 +85,7 @@ public class ShopManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            currentPassive = PassiveType.None;
         }
         else
         {
@@ -67,10 +95,7 @@ public class ShopManager : MonoBehaviour
 
     private void Start()
     {
-        if (shopPanel != null)
-            shopPanel.SetActive(false);
-
-        // Apagar las subsecciones y asegurar estado inicial
+        if (shopPanel != null) shopPanel.SetActive(false);
         if (attributesSectionPanel != null) attributesSectionPanel.SetActive(false);
         if (passiveSectionPanel != null) passiveSectionPanel.SetActive(false);
         if (mainShopButtons != null) mainShopButtons.SetActive(true);
@@ -80,6 +105,12 @@ public class ShopManager : MonoBehaviour
 
     public void AddCoins(int amount)
     {
+        // PASIVA 3: Duplica las monedas obtenidas (+100%)
+        if (currentPassive == PassiveType.Greed)
+        {
+            amount *= 2;
+        }
+
         coins += amount;
         UpdateShopUI();
 
@@ -90,6 +121,106 @@ public class ShopManager : MonoBehaviour
 
         Debug.Log("Monedas obtenidas: +" + amount + ". Total: " + coins);
     }
+
+    #region Lógica de Pasivas
+
+    public void EquipPassive1_Frenzy() => BuyAndEquipPassive(PassiveType.Frenzy, frenzyPrice);
+    public void EquipPassive2_Tank() => BuyAndEquipPassive(PassiveType.Tank, tankPrice);
+    public void EquipPassive3_Greed() => BuyAndEquipPassive(PassiveType.Greed, greedPrice);
+
+    public void BuyAndEquipPassive(PassiveType newPassive, int price)
+    {
+        if (currentPassive == newPassive)
+        {
+            Debug.Log("Ya tienes esta pasiva equipada.");
+            return;
+        }
+
+        if (coins < price)
+        {
+            Debug.Log("No tienes suficientes monedas para equipar: " + newPassive + ". Costo: " + price);
+            return;
+        }
+
+        coins -= price;
+
+        // Limpiar temporadores y acumulaciones anteriores
+        ResetPassiveStates();
+
+        currentPassive = newPassive;
+
+        Debug.Log($"¡Pasiva {currentPassive} equipada por {price} monedas! Total restante: {coins}");
+        UpdateShopUI();
+    }
+
+    private void ResetPassiveStates()
+    {
+        frenzyActive = false;
+        if (frenzyCoroutine != null) StopCoroutine(frenzyCoroutine);
+
+        tankKillStacks = 0;
+        if (tankTimerCoroutine != null) StopCoroutine(tankTimerCoroutine);
+    }
+
+    // Se invoca cuando muere cualquier enemigo
+    public void OnEnemyKilled()
+    {
+        if (currentPassive == PassiveType.Frenzy)
+        {
+            if (frenzyCoroutine != null) StopCoroutine(frenzyCoroutine);
+            frenzyCoroutine = StartCoroutine(FrenzyRoutine());
+        }
+        else if (currentPassive == PassiveType.Tank)
+        {
+            if (tankKillStacks < maxTankStacks)
+            {
+                tankKillStacks++;
+            }
+
+            // Reiniciar el temporizador de 20 segundos cada vez que mata un enemigo
+            if (tankTimerCoroutine != null) StopCoroutine(tankTimerCoroutine);
+            tankTimerCoroutine = StartCoroutine(TankStackTimerRoutine());
+
+            Debug.Log($"Pasiva Tanque: Acumulación {tankKillStacks}/{maxTankStacks} (+{tankKillStacks * 10}% de daño). Temporizador de 20s reiniciado.");
+        }
+    }
+
+    private IEnumerator FrenzyRoutine()
+    {
+        frenzyActive = true;
+        Debug.Log("¡Pasiva Frenesí ACTIVADA!");
+        yield return new WaitForSeconds(frenzyDuration);
+        frenzyActive = false;
+        Debug.Log("Pasiva Frenesí DESACTIVADA.");
+    }
+
+    private IEnumerator TankStackTimerRoutine()
+    {
+        yield return new WaitForSeconds(tankStackDuration);
+        tankKillStacks = 0;
+        Debug.Log("Pasiva Tanque: Expiraron los 20 segundos sin matar enemigos. Las acumulaciones de daño volvieron a 0.");
+    }
+
+    public float GetPlayerDamageMultiplier()
+    {
+        if (currentPassive == PassiveType.Tank)
+        {
+            // Cada acumulación otorga +10% de daño extra (0.10f)
+            return 1f + (tankKillStacks * 0.10f);
+        }
+        return 1f;
+    }
+
+    public float GetReloadTimeMultiplier()
+    {
+        if (currentPassive == PassiveType.Frenzy && frenzyActive)
+        {
+            return 0.70f;
+        }
+        return 1f;
+    }
+
+    #endregion
 
     public void OpenShop()
     {
@@ -102,7 +233,6 @@ public class ShopManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Al abrir la tienda, aseguramos mostrar el menú principal
         ShowMainShopMenu();
         UpdateShopUI();
     }
@@ -134,9 +264,8 @@ public class ShopManager : MonoBehaviour
         }
     }
 
-    #region Navegación de Paneles (Botones de Sección)
+    #region Navegación de Paneles
 
-    // Vuelve al menú principal de la tienda (Botón "Atrás") y muestra los botones principales
     public void ShowMainShopMenu()
     {
         if (mainShopButtons != null) mainShopButtons.SetActive(true);
@@ -144,7 +273,6 @@ public class ShopManager : MonoBehaviour
         if (passiveSectionPanel != null) passiveSectionPanel.SetActive(false);
     }
 
-    // Despliega la sección conjunta de Atributos y oculta los botones principales
     public void OpenAttributesSection()
     {
         if (mainShopButtons != null) mainShopButtons.SetActive(false);
@@ -152,7 +280,6 @@ public class ShopManager : MonoBehaviour
         if (passiveSectionPanel != null) passiveSectionPanel.SetActive(false);
     }
 
-    // Despliega la sección de Efectos Pasivos y oculta los botones principales
     public void OpenPassiveSection()
     {
         if (mainShopButtons != null) mainShopButtons.SetActive(false);
@@ -166,18 +293,10 @@ public class ShopManager : MonoBehaviour
 
     public void BuySpeedUpgrade()
     {
-        if (speedLevel >= maxSpeedLevel)
-        {
-            Debug.Log("La velocidad ya está al máximo.");
-            return;
-        }
+        if (speedLevel >= maxSpeedLevel) return;
 
         int cost = 100 * (speedLevel + 1);
-        if (coins < cost)
-        {
-            Debug.Log("No tienes suficientes monedas.");
-            return;
-        }
+        if (coins < cost) return;
 
         coins -= cost;
         speedLevel++;
@@ -189,65 +308,42 @@ public class ShopManager : MonoBehaviour
         }
 
         UpdateShopUI();
-        Debug.Log("Mejora de velocidad comprada. Nivel: " + speedLevel);
     }
 
-    // Aumenta ÚNICAMENTE la vida máxima en 10 puntos (sin curar de golpe)
     public void BuyHealthUpgrade()
     {
-        if (healthLevel >= maxHealthLevels)
-        {
-            Debug.Log("La vida ya está al máximo.");
-            return;
-        }
+        if (healthLevel >= maxHealthLevels) return;
 
         int cost = 75 * (healthLevel + 1);
-        if (coins < cost)
-        {
-            Debug.Log("No tienes suficientes monedas para la vida.");
-            return;
-        }
+        if (coins < cost) return;
 
         coins -= cost;
         healthLevel++;
 
         if (playerHealth != null)
         {
-            playerHealth.maxHealth += 10f; // Solo incrementa el límite máximo
-            // playerHealth.currentHealth se queda exactamente igual
+            playerHealth.maxHealth += 10f;
         }
 
         UpdateShopUI();
-        Debug.Log("¡Vida máxima aumentada en +10! Límite actual: " + (playerHealth != null ? playerHealth.maxHealth : 0));
     }
 
-    // Aumenta ÚNICAMENTE el escudo máximo en 10 puntos (sin recargar de golpe)
     public void BuyShieldUpgrade()
     {
-        if (shieldLevel >= maxShieldLevels)
-        {
-            Debug.Log("El escudo ya está al máximo.");
-            return;
-        }
+        if (shieldLevel >= maxShieldLevels) return;
 
         int cost = 75 * (shieldLevel + 1);
-        if (coins < cost)
-        {
-            Debug.Log("No tienes suficientes monedas para el escudo.");
-            return;
-        }
+        if (coins < cost) return;
 
         coins -= cost;
         shieldLevel++;
 
         if (playerShield != null)
         {
-            playerShield.maxShield += 10f; // Solo incrementa el límite máximo del escudo
-            // playerShield.currentShield se queda exactamente igual
+            playerShield.maxShield += 10f;
         }
 
         UpdateShopUI();
-        Debug.Log("¡Escudo máximo aumentado en +10! Límite actual: " + (playerShield != null ? playerShield.maxShield : 0));
     }
 
     #endregion
@@ -257,31 +353,22 @@ public class ShopManager : MonoBehaviour
         if (coinsText != null)
             coinsText.text = "Monedas: " + coins;
 
-        // UI Velocidad
         if (speedLevelText != null)
             speedLevelText.text = "Nivel: " + speedLevel + " / " + maxSpeedLevel;
 
         if (speedPriceText != null)
-        {
             speedPriceText.text = (speedLevel >= maxSpeedLevel) ? "MÁXIMO" : "Costo: " + (100 * (speedLevel + 1));
-        }
 
-        // UI Vida
         if (healthLevelText != null)
             healthLevelText.text = "Nivel: " + healthLevel + " / " + maxHealthLevels;
 
         if (healthPriceText != null)
-        {
             healthPriceText.text = (healthLevel >= maxHealthLevels) ? "MÁXIMO" : "Costo: " + (75 * (healthLevel + 1));
-        }
 
-        // UI Escudo
         if (shieldLevelText != null)
             shieldLevelText.text = "Nivel: " + shieldLevel + " / " + maxShieldLevels;
 
         if (shieldPriceText != null)
-        {
             shieldPriceText.text = (shieldLevel >= maxShieldLevels) ? "MÁXIMO" : "Costo: " + (75 * (shieldLevel + 1));
-        }
     }
 }
