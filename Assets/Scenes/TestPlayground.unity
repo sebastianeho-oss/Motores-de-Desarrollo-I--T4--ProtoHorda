@@ -11271,201 +11271,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 97417691}
   m_CullTransparentMesh: 1
---- !u!1 &98917627
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 98917628}
-  - component: {fileID: 98917635}
-  - component: {fileID: 98917634}
-  - component: {fileID: 98917633}
-  - component: {fileID: 98917632}
-  - component: {fileID: 98917631}
-  - component: {fileID: 98917630}
-  - component: {fileID: 98917629}
-  m_Layer: 0
-  m_Name: Shotgun
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &98917628
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 98917627}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.106, y: 2.2, z: -2.945}
-  m_LocalScale: {x: 0.2487, y: 0.2487, z: 0.89344585}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1595163283}
-  m_Father: {fileID: 1775756437}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &98917629
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 98917627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cad370bc354fd304a8c74773eae24631, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WeaponInfo
-  cameraType: 0
---- !u!114 &98917630
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 98917627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6405165a1af5c24788d1527f9f461fc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WeaponAmmo
-  canReload: 1
-  ammoType: 3
-  magazineSize: 6
-  reloadTime: 1.5
-  currentAmmo: 0
-  playerHealth: {fileID: 1299347298}
---- !u!114 &98917631
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 98917627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57937999d00a878489056cf5c7e7e95d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WeaponRecoil
-  recoilX: 0.9
-  recoilY: 3
-  aimRecoilMultiplier: 0.5
-  crouchStillRecoilMultiplier: 0.6
-  crouchMovingRecoilMultiplier: 1.4
-  cameraController: {fileID: 1718251891}
-  movementController: {fileID: 1299347291}
---- !u!114 &98917632
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 98917627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52415e2161008b6408d026b82f6cca71, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ShotgunShootingSystem
-  canShoot: 1
-  firePoint: {fileID: 1595163283}
-  mainCamera: {fileID: 330585545}
-  playerHealth: {fileID: 1299347298}
-  pelletsPerShot: 9
-  spreadAngle: 3
-  damagePerPellet: 20
-  maxShootDistance: 30
-  fireRate: 0.7
-  applyDamageFalloff: 1
-  tracerPrefab: {fileID: 485604104232392431, guid: c4ed05d5bcbed2d48945ad5ccc72d78d, type: 3}
-  tracerDuration: 0.04
-  shootableMask:
-    serializedVersion: 2
-    m_Bits: 128
-  weaponRecoil: {fileID: 98917631}
---- !u!65 &98917633
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 98917627}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!23 &98917634
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 98917627}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &98917635
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 98917627}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &99447425
 GameObject:
   m_ObjectHideFlags: 0
@@ -11922,7 +11727,7 @@ MonoBehaviour:
   crouchStillRecoilMultiplier: 0.6
   crouchMovingRecoilMultiplier: 1.4
   cameraController: {fileID: 1718251891}
-  movementController: {fileID: 1299347291}
+  movementController: {fileID: 0}
 --- !u!114 &155725305
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14237,7 +14042,7 @@ GameObject:
   - component: {fileID: 397098260}
   - component: {fileID: 397098268}
   m_Layer: 0
-  m_Name: Penetrator
+  m_Name: Sniper
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14296,7 +14101,7 @@ MonoBehaviour:
   crouchStillRecoilMultiplier: 0.6
   crouchMovingRecoilMultiplier: 1.4
   cameraController: {fileID: 1718251891}
-  movementController: {fileID: 1299347291}
+  movementController: {fileID: 0}
 --- !u!114 &397098263
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15114,7 +14919,7 @@ GameObject:
   - component: {fileID: 535839756}
   - component: {fileID: 535839764}
   m_Layer: 0
-  m_Name: Machine Gun
+  m_Name: Assault Rifle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15173,7 +14978,7 @@ MonoBehaviour:
   crouchStillRecoilMultiplier: 0.6
   crouchMovingRecoilMultiplier: 1.4
   cameraController: {fileID: 1718251891}
-  movementController: {fileID: 1299347291}
+  movementController: {fileID: 0}
 --- !u!114 &535839759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20130,9 +19935,6 @@ MonoBehaviour:
   - ammoType: 2
     currentReserve: 180
     maxReserve: 180
-  - ammoType: 3
-    currentReserve: 60
-    maxReserve: 60
 --- !u!114 &1299347298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25217,37 +25019,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1324291805743569918, guid: d61cbbd88dee1de418d106274efd9973, type: 3}
   m_PrefabInstance: {fileID: 3336789446460904822}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1595163282
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1595163283}
-  m_Layer: 0
-  m_Name: FirePoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1595163283
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1595163282}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 1.204}
-  m_LocalScale: {x: 4.020909, y: 4.020909, z: 0.9203692}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 98917628}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1613383209
 GameObject:
   m_ObjectHideFlags: 0
@@ -26825,7 +26596,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1867883476}
-  - {fileID: 98917628}
   - {fileID: 535839755}
   - {fileID: 155725301}
   - {fileID: 397098259}
@@ -30386,7 +30156,7 @@ MonoBehaviour:
   crouchStillRecoilMultiplier: 0.6
   crouchMovingRecoilMultiplier: 1.4
   cameraController: {fileID: 1718251891}
-  movementController: {fileID: 1299347291}
+  movementController: {fileID: 0}
 --- !u!114 &1867883484
 MonoBehaviour:
   m_ObjectHideFlags: 0

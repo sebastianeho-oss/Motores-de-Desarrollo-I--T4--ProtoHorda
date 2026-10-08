@@ -21,9 +21,6 @@ public class WeaponAmmo : MonoBehaviour
     private PlayerAmmoInventory playerInventory;
     private PlayerInputActions inputActions;
 
-    // Referencia a la corrutina de recarga
-    private Coroutine reloadCoroutine;
-
     public bool IsReloading => isReloading;
 
     private void Awake()
@@ -31,19 +28,8 @@ public class WeaponAmmo : MonoBehaviour
         inputActions = new PlayerInputActions();
     }
 
-    private void OnEnable()
-    {
-        inputActions.Enable();
-        // Garantizar que el arma no inicie trabada al cambiar a ella
-        isReloading = false;
-    }
-
-    private void OnDisable()
-    {
-        inputActions.Disable();
-        // Cancelar recarga automáticamente si se enfunda o cambia de arma
-        CancelReload();
-    }
+    private void OnEnable() => inputActions.Enable();
+    private void OnDisable() => inputActions.Disable();
 
     void Start()
     {
@@ -62,7 +48,7 @@ public class WeaponAmmo : MonoBehaviour
 
         bool isAlive = (playerHealth == null || !playerHealth.isDead);
         bool allowedToReload = canReload && isAlive && !GameManager.IsPaused;
-
+                
         if (inputActions.Player.Reload.WasPressedThisFrame() && currentAmmo < magazineSize && allowedToReload)
         {
             TryReload();
@@ -93,20 +79,8 @@ public class WeaponAmmo : MonoBehaviour
         int reserve = playerInventory.GetReserveAmmo(ammoType);
         if (reserve > 0 && currentAmmo < magazineSize)
         {
-            if (reloadCoroutine != null) StopCoroutine(reloadCoroutine);
-            reloadCoroutine = StartCoroutine(ReloadRoutine());
+            StartCoroutine(ReloadRoutine());
         }
-    }
-
-    // Método público para cancelar la recarga externamente si lo necesitas
-    public void CancelReload()
-    {
-        if (reloadCoroutine != null)
-        {
-            StopCoroutine(reloadCoroutine);
-            reloadCoroutine = null;
-        }
-        isReloading = false;
     }
 
     private IEnumerator ReloadRoutine()
@@ -127,7 +101,6 @@ public class WeaponAmmo : MonoBehaviour
 
         currentAmmo += ammoExtracted;
         isReloading = false;
-        reloadCoroutine = null;
 
         Debug.Log($"Recarga completada. {ammoType}: {currentAmmo}/{magazineSize}");
     }
