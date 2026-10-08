@@ -18544,9 +18544,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   shopManager: {fileID: 257766016}
+  gameManager: {fileID: 715094300}
   waves:
   - {fileID: 11400000, guid: a16c0a0d5d4aaca4dbbab3cfd7738c57, type: 2}
   - {fileID: 11400000, guid: ee8aa0476b0cf3348ad24c2946f87ab2, type: 2}
+  - {fileID: 11400000, guid: f88ea6c6d0e051042acf0002704de310, type: 2}
+  - {fileID: 11400000, guid: 3452ebe343d5f32489c0b0b2371e41f6, type: 2}
+  - {fileID: 11400000, guid: e7fa8471bd90b4541920835bd199de9a, type: 2}
+  - {fileID: 11400000, guid: d9b04f547ca80cb4a93f3b097c8b219d, type: 2}
+  - {fileID: 11400000, guid: 1cdb416b2aaa3a243b3844a46e370833, type: 2}
+  - {fileID: 11400000, guid: bdbcd343688a4734b9f4975684ea91a1, type: 2}
+  - {fileID: 11400000, guid: cd0541c5cdea78b41b0abedf2d2f72dd, type: 2}
+  - {fileID: 11400000, guid: 7b556ab6080058b46a1e734056224e69, type: 2}
+  - {fileID: 11400000, guid: dd03075b94fa7994ca54f399b3aa0fec, type: 2}
+  - {fileID: 11400000, guid: f37e8565716fa0b4eadf8c6d25361ba3, type: 2}
   - {fileID: 11400000, guid: e5fa9b61bdcaf23488f18129bd6a972d, type: 2}
   spawnPoints:
   - {fileID: 1737681661}

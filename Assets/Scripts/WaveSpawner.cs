@@ -5,6 +5,7 @@ using UnityEngine;
 public class WaveSpawner : MonoBehaviour
 {
     [SerializeField] private ShopManager shopManager;
+    [SerializeField] private GameManager gameManager; // Referencia para controlar el GameOver[cite: 6, 8]
 
     [Header("Configuración de Olas y Spawns")]
     [SerializeField] private List<WaveData> waves;
@@ -65,16 +66,27 @@ public class WaveSpawner : MonoBehaviour
         {
             activeWaveRemainingTime -= Time.deltaTime;
 
+            // Al llegar a 0 se detiene la ronda y activa el GameOver[cite: 6, 8]
             if (activeWaveRemainingTime <= 0f)
             {
                 activeWaveRemainingTime = 0f;
+                isWaveActive = false;
+
+                if (gameManager != null)
+                {
+                    gameManager.GameOver();
+                }
+                else
+                {
+                    Debug.LogError("¡No se ha asignado el GameManager en el Inspector del WaveSpawner!");
+                }
             }
         }
     }
 
     public void SkipCountdown()
     {
-        // Solo permite omitir el tiempo si está en la cuenta regresiva antes de iniciar la oleada
+        // Omitir la espera antes de iniciar la oleada
         if (isCountingDown)
         {
             waveTimer = 0f;
@@ -86,6 +98,10 @@ public class WaveSpawner : MonoBehaviour
         if (currentWaveIndex >= waves.Count)
         {
             Debug.Log("¡Felicidades! Has sobrevivido a todas las olas.");
+            if (gameManager != null)
+            {
+                gameManager.Win();
+            }
             yield break;
         }
 
@@ -171,6 +187,7 @@ public class WaveSpawner : MonoBehaviour
             }
         }
 
+        // Mezclar aleatoriamente el orden de los enemigos
         for (int i = 0; i < list.Count; i++)
         {
             GameObject temp = list[i];
@@ -194,7 +211,7 @@ public class WaveSpawner : MonoBehaviour
 
         if (activeEnemiesCount <= 0 && !isSpawning)
         {
-            isWaveActive = false;
+            isWaveActive = false; // Desactiva la cuenta regresiva antes de que llegue a 0[cite: 8]
 
             Debug.Log("¡Ola " + (currentWaveIndex + 1) + " completada!");
 
