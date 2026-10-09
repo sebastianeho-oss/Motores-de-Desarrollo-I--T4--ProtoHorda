@@ -303,8 +303,9 @@ public class ShopManager : MonoBehaviour
 
         if (playerMovement != null)
         {
-            playerMovement.walkSpeed += 0.5f;
-            playerMovement.sprintSpeed += 0.85f;
+            // Incrementa la velocidad de caminata y sprint un 30% (+30%) en cada compra
+            playerMovement.walkSpeed *= 1.30f;
+            playerMovement.sprintSpeed *= 1.30f;
         }
 
         UpdateShopUI();

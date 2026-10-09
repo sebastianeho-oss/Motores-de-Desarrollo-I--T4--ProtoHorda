@@ -15280,7 +15280,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   canReload: 1
   ammoType: 3
-  magazineSize: 30
+  magazineSize: 60
   reloadTime: 1
   currentAmmo: 90
   playerHealth: {fileID: 1299347298}
