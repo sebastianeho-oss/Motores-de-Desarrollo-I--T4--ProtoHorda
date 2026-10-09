@@ -29,7 +29,12 @@ public class WeaponAmmo : MonoBehaviour
     }
 
     private void OnEnable() => inputActions.Enable();
-    private void OnDisable() => inputActions.Disable();
+
+    private void OnDisable()
+    {
+        inputActions.Disable();
+        CancelReload(); // Cancela la recarga al ocultar o cambiar el arma
+    }
 
     void Start()
     {
@@ -48,7 +53,7 @@ public class WeaponAmmo : MonoBehaviour
 
         bool isAlive = (playerHealth == null || !playerHealth.isDead);
         bool allowedToReload = canReload && isAlive && !GameManager.IsPaused;
-                
+
         if (inputActions.Player.Reload.WasPressedThisFrame() && currentAmmo < magazineSize && allowedToReload)
         {
             TryReload();
@@ -80,6 +85,16 @@ public class WeaponAmmo : MonoBehaviour
         if (reserve > 0 && currentAmmo < magazineSize)
         {
             StartCoroutine(ReloadRoutine());
+        }
+    }
+
+    public void CancelReload()
+    {
+        if (isReloading)
+        {
+            StopAllCoroutines();
+            isReloading = false;
+            Debug.Log($"Recarga interrumpida para {ammoType}");
         }
     }
 

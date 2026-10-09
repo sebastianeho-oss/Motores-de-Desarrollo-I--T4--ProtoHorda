@@ -20,11 +20,20 @@ public class AmmoUI : MonoBehaviour
     {
         if (weaponSwitcher == null || playerInventory == null) return;
 
-        if (weaponSwitcher.transform.childCount == 0 || weaponSwitcher.selectedWeapon >= weaponSwitcher.transform.childCount) return;
+        // Si el jugador está desarmado (-1) o el índice está fuera de rango, limpia la UI
+        if (weaponSwitcher.selectedWeapon < 0 || weaponSwitcher.selectedWeapon >= weaponSwitcher.transform.childCount)
+        {
+            ClearUI();
+            return;
+        }
 
         Transform activeWeaponTransform = weaponSwitcher.transform.GetChild(weaponSwitcher.selectedWeapon);
 
-        if (activeWeaponTransform == null || !activeWeaponTransform.gameObject.activeSelf) return;
+        if (activeWeaponTransform == null || !activeWeaponTransform.gameObject.activeSelf)
+        {
+            ClearUI();
+            return;
+        }
 
         WeaponAmmo activeAmmo = activeWeaponTransform.GetComponent<WeaponAmmo>();
 
@@ -56,6 +65,23 @@ public class AmmoUI : MonoBehaviour
                     ammoText.color = (currentInMag == 0) ? emptyColor : normalColor;
                 }
             }
+        }
+        else
+        {
+            ClearUI();
+        }
+    }
+
+    private void ClearUI()
+    {
+        if (weaponNameText != null)
+        {
+            weaponNameText.text = "";
+        }
+
+        if (ammoText != null)
+        {
+            ammoText.text = "";
         }
     }
 }
